@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}AI Traffic Assistant - AI Smart Traffic Analyzer{% endblock %}
 {% block page_title %}<i class="bi bi-mic-fill text-purple"></i> AI Traffic Chat & Voice Assistant{% endblock %}
@@ -84,7 +85,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="/static/js/voice_assistant.js"></script>
+<script src="{% static 'js/voice_assistant.js' %}"></script>
 <script>
     function askPreset(question) {
         if (window.aiVoiceAssistant) {

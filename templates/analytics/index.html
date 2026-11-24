@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Traffic Analytics - AI Smart Traffic Analyzer{% endblock %}
 {% block page_title %}<i class="bi bi-pie-chart-fill text-purple"></i> Comprehensive Traffic Telemetry Analytics{% endblock %}
@@ -62,5 +63,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="/static/js/traffic_charts.js"></script>
+<script src="{% static 'js/traffic_charts.js' %}"></script>
 {% endblock %}

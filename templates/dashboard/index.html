@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Admin Command Center - AI Smart Traffic Analyzer{% endblock %}
 {% block page_title %}<i class="bi bi-speedometer2 text-purple"></i> Smart City Traffic Command Room{% endblock %}
@@ -90,7 +91,8 @@
             <div class="position-relative" style="height: 180px; background: #000;">
                 <img src="/cameras/{{ cam.camera_id }}/stream/?mode=yolo"
                      alt="{{ cam.name }}"
-                     class="w-100 h-100 object-fit-cover">
+                     class="w-100 h-100 object-fit-cover"
+                     onerror="this.onerror=null; this.outerHTML='<video src=\'/cameras/{{ cam.camera_id }}/video/\' autoplay loop muted playsinline style=\'width:100%; height:100%; object-fit:cover;\'></video>';">
 
                 <div class="position-absolute top-0 start-0 m-2">
                     <span class="badge bg-danger" style="font-size:10px;"><i class="bi bi-record-circle me-1"></i> LIVE</span>
@@ -178,5 +180,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="/static/js/traffic_charts.js"></script>
+<script src="{% static 'js/traffic_charts.js' %}"></script>
 {% endblock %}

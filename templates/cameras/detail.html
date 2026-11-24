@@ -52,10 +52,12 @@
                 <img id="active-live-stream"
                      src="/cameras/{{ camera.camera_id }}/stream/?mode=yolo"
                      alt="{{ camera.name }}"
-                     class="w-100 h-100 object-fit-contain d-block">
+                     class="w-100 h-100 object-fit-contain d-block"
+                     onerror="enableVideoFallback()">
 
                 <!-- Native Video Player fallback for direct MP4 playback -->
-                <video id="native-mp4-video" class="w-100 h-100 object-fit-contain d-none" loop muted playsinline>
+                <video id="native-mp4-video" class="w-100 h-100 object-fit-contain d-none" loop muted playsinline autoplay controls>
+                    <source src="/cameras/{{ camera.camera_id }}/video/" type="video/mp4">
                     <source src="/media/cameras/{{ camera.video_file }}" type="video/mp4">
                     Your browser does not support HTML5 video.
                 </video>
@@ -486,11 +488,32 @@
         }
     }
 
+    function enableVideoFallback() {
+        const stream = document.getElementById('active-live-stream');
+        const video = document.getElementById('native-mp4-video');
+        if (stream && video) {
+            stream.classList.add('d-none');
+            video.classList.remove('d-none');
+            video.play().catch(e => console.log('Autoplay deferred:', e));
+        }
+    }
+
     function switchStreamMode(mode) {
         currentMode = mode;
         document.getElementById('btn-mode-yolo').classList.toggle('active', mode === 'yolo');
         document.getElementById('btn-mode-raw').classList.toggle('active', mode === 'raw');
-        streamImg.src = `/cameras/{{ camera.camera_id }}/stream/?mode=${mode}&t=${new Date().getTime()}`;
+        const stream = document.getElementById('active-live-stream');
+        const video = document.getElementById('native-mp4-video');
+        if (mode === 'raw') {
+            stream.classList.add('d-none');
+            video.classList.remove('d-none');
+            video.play().catch(e => console.log('Video play:', e));
+        } else {
+            video.pause();
+            video.classList.add('d-none');
+            stream.classList.remove('d-none');
+            stream.src = `/cameras/{{ camera.camera_id }}/stream/?mode=yolo&t=${new Date().getTime()}`;
+        }
     }
 
     function togglePlayback() {

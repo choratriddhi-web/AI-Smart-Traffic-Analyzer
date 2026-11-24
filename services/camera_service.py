@@ -102,18 +102,26 @@ class CameraStreamManager:
                 else:
                     video_file = f"{camera_id.lower()}.mp4"
 
-                # Check inside media/cameras/
-                media_video_path = os.path.join(settings.BASE_DIR, 'media', 'cameras', video_file)
-                if not os.path.exists(media_video_path):
-                    # Try fallback names
-                    fallback_map = {
-                        "CAM-01": "01_busy_city_intersection.mp4",
-                        "CAM-02": "02_ambulance_emergency.mp4",
-                        "CAM-03": "03_roundabout.mp4",
-                        "CAM-04": "04_accident_detection.mp4"
-                    }
-                    fallback_name = fallback_map.get(camera_id, video_file)
-                    media_video_path = os.path.join(settings.BASE_DIR, 'media', 'cameras', fallback_name)
+                # Check candidate paths in media/cameras/ and static/cameras/
+                fallback_map = {
+                    "CAM-01": "01_busy_city_intersection.mp4",
+                    "CAM-02": "02_ambulance_emergency.mp4",
+                    "CAM-03": "03_roundabout.mp4",
+                    "CAM-04": "04_accident_detection.mp4"
+                }
+                fallback_name = fallback_map.get(camera_id, video_file)
+
+                candidates = [
+                    os.path.join(settings.BASE_DIR, 'media', 'cameras', video_file),
+                    os.path.join(settings.BASE_DIR, 'media', 'cameras', fallback_name),
+                    os.path.join(settings.BASE_DIR, 'static', 'cameras', video_file),
+                    os.path.join(settings.BASE_DIR, 'static', 'cameras', fallback_name),
+                ]
+                media_video_path = candidates[0]
+                for p in candidates:
+                    if os.path.exists(p):
+                        media_video_path = p
+                        break
 
                 cls._instances[camera_id] = CameraStreamManager(camera_id, media_video_path)
             return cls._instances[camera_id]
@@ -131,6 +139,17 @@ def get_all_camera_details():
         video_filename = cam.get('video_file', '')
         video_full_path = os.path.join(settings.BASE_DIR, 'media', 'cameras', video_filename)
         exists = os.path.exists(video_full_path)
+        if not exists:
+            fallback_map = {
+                "CAM-01": "01_busy_city_intersection.mp4",
+                "CAM-02": "02_ambulance_emergency.mp4",
+                "CAM-03": "03_roundabout.mp4",
+                "CAM-04": "04_accident_detection.mp4"
+            }
+            fb = fallback_map.get(cam_id, '')
+            if fb and os.path.exists(os.path.join(settings.BASE_DIR, 'media', 'cameras', fb)):
+                video_filename = fb
+                exists = True
 
         results.append({
             "camera_id": cam_id,
@@ -157,8 +176,22 @@ def get_camera_info(camera_id: str):
         return None
     cam['id'] = str(cam['_id'])
     video_filename = cam.get('video_file', '')
+    video_full_path = os.path.join(settings.BASE_DIR, 'media', 'cameras', video_filename)
+    exists = os.path.exists(video_full_path)
+    if not exists:
+        fallback_map = {
+            "CAM-01": "01_busy_city_intersection.mp4",
+            "CAM-02": "02_ambulance_emergency.mp4",
+            "CAM-03": "03_roundabout.mp4",
+            "CAM-04": "04_accident_detection.mp4"
+        }
+        fb = fallback_map.get(camera_id, '')
+        if fb and os.path.exists(os.path.join(settings.BASE_DIR, 'media', 'cameras', fb)):
+            video_filename = fb
+            exists = True
+            cam['video_file'] = fb
     cam['video_url'] = f"/media/cameras/{video_filename}"
-    cam['file_exists'] = os.path.exists(os.path.join(settings.BASE_DIR, 'media', 'cameras', video_filename))
+    cam['file_exists'] = exists
     return cam
 
 def update_camera_video_file(camera_id: str, file_obj):

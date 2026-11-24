@@ -24,6 +24,22 @@ Thumbs.db
 
 # Logs
 *.log
+logs/*.log
+
+# Collected Static & Build
+staticfiles/
+static/cameras/
+
+# Uploaded User / Incident Media (Keep standard seed camera videos)
+media/cameras/uploads/
+media/cameras/cam-05*
+media/cameras/cam-01_*
+media/incidents/*
+media/processed/*
+!media/cameras/01_busy_city_intersection.mp4
+!media/cameras/02_ambulance_emergency.mp4
+!media/cameras/03_roundabout.mp4
+!media/cameras/04_accident_detection.mp4
 
 # Temporary files
 temp/

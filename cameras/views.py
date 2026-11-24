@@ -2,7 +2,7 @@ import cv2
 import time
 import logging
 from django.shortcuts import render, redirect
-from django.http import StreamingHttpResponse, JsonResponse, Http404
+from django.http import StreamingHttpResponse, JsonResponse, Http404, FileResponse
 from django.contrib import messages
 from services.camera_service import (
     CameraStreamManager,
@@ -246,6 +246,38 @@ def camera_stream_view(request, camera_id):
         _generate_stream_frames(camera_id, enable_yolo=enable_yolo),
         content_type='multipart/x-mixed-replace; boundary=frame'
     )
+
+def camera_video_file_view(request, camera_id):
+    """
+    Directly streams the raw MP4 video file with standard HTTP Range support for HTML5 video players.
+    Works seamlessly in both local development and live cloud production deployment.
+    """
+    import os
+    from django.conf import settings
+
+    cam = get_camera_info(camera_id)
+    video_filename = cam.get('video_file', '') if cam else ''
+
+    fallback_map = {
+        "CAM-01": "01_busy_city_intersection.mp4",
+        "CAM-02": "02_ambulance_emergency.mp4",
+        "CAM-03": "03_roundabout.mp4",
+        "CAM-04": "04_accident_detection.mp4"
+    }
+    fallback_name = fallback_map.get(camera_id, f"{camera_id.lower()}.mp4")
+
+    candidate_paths = [
+        os.path.join(settings.BASE_DIR, 'media', 'cameras', video_filename) if video_filename else '',
+        os.path.join(settings.BASE_DIR, 'media', 'cameras', fallback_name),
+        os.path.join(settings.BASE_DIR, 'static', 'cameras', video_filename) if video_filename else '',
+        os.path.join(settings.BASE_DIR, 'static', 'cameras', fallback_name),
+    ]
+
+    for p in candidate_paths:
+        if p and os.path.exists(p):
+            return FileResponse(open(p, 'rb'), content_type='video/mp4')
+
+    raise Http404(f"Video file for camera {camera_id} not found.")
 
 def camera_stats_api(request, camera_id):
     """
