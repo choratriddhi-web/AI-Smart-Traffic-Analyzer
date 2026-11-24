@@ -1,0 +1,548 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ camera.camera_id }} - {{ camera.name }} - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}
+    <i class="bi bi-camera-reels-fill text-purple"></i> {{ camera.camera_id }}: {{ camera.name }}
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Main Video Feed & Controls (Left 8 Cols) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-purple p-0 overflow-hidden mb-4">
+            <!-- Feed Top Bar -->
+            <div class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-20">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger"><i class="bi bi-broadcast me-1"></i> SIMULATED LIVE</span>
+                    <span class="text-white fw-bold">{{ camera.name }}</span>
+                    {% if camera.camera_id == 'CAM-04' %}
+                    <span class="badge bg-danger text-white border border-danger border-opacity-75 animate-pulse">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> ACCIDENT SURVEILLANCE SECTOR
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-purple active" id="btn-mode-yolo" onclick="switchStreamMode('yolo')">
+                        <i class="bi bi-bounding-box me-1"></i> AI YOLO Stream
+                    </button>
+                    <button class="btn btn-outline-purple" id="btn-mode-raw" onclick="switchStreamMode('raw')">
+                        <i class="bi bi-film me-1"></i> Raw Stream
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Accident Emergency Alert Banner -->
+            <div id="camera-accident-banner" class="d-none alert alert-danger m-3 mb-0 py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-lg" style="background: linear-gradient(90deg, #991b1b 0%, #450a0a 100%); border: 2px solid #ef4444; border-radius: 10px;">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:34px; height:34px; border-radius:50%; background:#ef4444; display:flex; align-items:center; justify-content:center; color:#fff;" class="animate-pulse">
+                        <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <strong class="text-white d-block" style="font-size:13px;">🚨 CRITICAL ACCIDENT DETECTED ON CAM-04!</strong>
+                        <small class="text-light opacity-90">Multi-vehicle collision in Lane 2/3. Traffic stoppage underway.</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-light fw-bold px-3" onclick="reopenAccidentPopup()">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Open Accident Pop-up
+                </button>
+            </div>
+
+            <!-- Video Player Display Container -->
+            <div class="position-relative" style="background:#000; min-height:480px;" id="video-stream-container">
+                <img id="active-live-stream"
+                     src="/cameras/{{ camera.camera_id }}/stream/?mode=yolo"
+                     alt="{{ camera.name }}"
+                     class="w-100 h-100 object-fit-contain d-block">
+
+                <!-- Native Video Player fallback for direct MP4 playback -->
+                <video id="native-mp4-video" class="w-100 h-100 object-fit-contain d-none" loop muted playsinline>
+                    <source src="/media/cameras/{{ camera.video_file }}" type="video/mp4">
+                    Your browser does not support HTML5 video.
+                </video>
+
+                <!-- Overlay Telemetry -->
+                <div class="position-absolute top-0 start-0 m-3 p-2 rounded" style="background:rgba(19,10,36,0.8); backdrop-filter:blur(8px); border:1px solid rgba(168,85,247,0.3); font-size:11px;">
+                    <div class="text-white"><i class="bi bi-cpu text-purple me-1"></i> YOLOv8n + ByteTrack</div>
+                    <div class="text-cyan"><i class="bi bi-record-circle text-danger me-1"></i> Real-Time Inference: 24.8 ms</div>
+                </div>
+            </div>
+
+            <!-- Video Play / Pause & Controls Toolbar -->
+            <div class="p-3 d-flex align-items-center justify-content-between bg-dark bg-opacity-50">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-purple" id="btn-play-pause" onclick="togglePlayback()">
+                        <i class="bi bi-pause-fill me-1"></i> Pause Feed
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple" onclick="refreshFeed()">
+                        <i class="bi bi-arrow-repeat me-1"></i> Restart Stream
+                    </button>
+                    <button class="btn btn-sm btn-cyan" data-bs-toggle="modal" data-bs-target="#uploadDetailModal">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload/Change Video
+                    </button>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted small"><i class="bi bi-aspect-ratio text-cyan"></i> {{ camera.resolution }}</span>
+                    <span class="text-muted small"><i class="bi bi-speedometer text-purple"></i> {{ camera.fps }} FPS</span>
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Resource Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lane Breakdown Table -->
+        <div class="traffic-card">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-distribute-vertical text-purple"></i> Lane-Wise Telemetry & Queue Estimates</h5>
+                <a href="{% url 'traffic:lanes' %}" class="btn btn-sm btn-outline-purple">Configure Lanes</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Lane</th>
+                            <th>Direction</th>
+                            <th>Active Vehicles</th>
+                            <th>Estimated Queue</th>
+                            <th>Capacity</th>
+                            <th>Lane Density</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lane-stats-tbody">
+                        <tr>
+                            <td><i class="bi bi-signpost-split text-cyan me-1"></i> Lane 1 - Left Turn</td>
+                            <td>Northbound</td>
+                            <td class="fw-bold text-white" id="l1-count">4</td>
+                            <td class="text-warning" id="l1-queue">2 vehicles</td>
+                            <td>15 veh</td>
+                            <td><span class="badge bg-success">LOW (26%)</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-signpost-split text-cyan me-1"></i> Lane 2 - Straight</td>
+                            <td>Northbound</td>
+                            <td class="fw-bold text-white" id="l2-count">9</td>
+                            <td class="text-danger" id="l2-queue">5 vehicles</td>
+                            <td>20 veh</td>
+                            <td><span class="badge bg-warning text-dark">MODERATE (45%)</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-signpost-split text-cyan me-1"></i> Lane 3 - Right Turn</td>
+                            <td>Northbound</td>
+                            <td class="fw-bold text-white" id="l3-count">5</td>
+                            <td class="text-info" id="l3-queue">3 vehicles</td>
+                            <td>15 veh</td>
+                            <td><span class="badge bg-info">LOW (33%)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telemetry Sidebar (Right 4 Cols) -->
+    <div class="col-lg-4">
+        <!-- Live Vehicle Classification Card -->
+        <div class="traffic-card glow-cyan mb-4">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-boxes text-cyan"></i> Live Vehicle Detection</h5>
+                <span class="badge bg-info text-dark" id="live-active-counter">-- Active</span>
+            </div>
+
+            <div class="row g-2 mb-3 text-center">
+                <div class="col-6">
+                    <div class="p-3 rounded" style="background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3);">
+                        <i class="bi bi-car-front fs-4 text-purple d-block mb-1"></i>
+                        <span class="fs-4 fw-bold text-white" id="count-cars">--</span>
+                        <small class="text-muted d-block" style="font-size:11px;">CARS</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3);">
+                        <i class="bi bi-bicycle fs-4 text-cyan d-block mb-1"></i>
+                        <span class="fs-4 fw-bold text-white" id="count-motorcycles">--</span>
+                        <small class="text-muted d-block" style="font-size:11px;">MOTORCYCLES</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded" style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3);">
+                        <i class="bi bi-bus-front fs-4 text-warning d-block mb-1"></i>
+                        <span class="fs-4 fw-bold text-white" id="count-buses">--</span>
+                        <small class="text-muted d-block" style="font-size:11px;">BUSES</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.3);">
+                        <i class="bi bi-truck fs-4 text-magenta d-block mb-1"></i>
+                        <span class="fs-4 fw-bold text-white" id="count-trucks">--</span>
+                        <small class="text-muted d-block" style="font-size:11px;">TRUCKS</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 rounded mb-2" style="background:rgba(168,85,247,0.08);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-muted small">Virtual Line Total:</span>
+                    <span class="fw-bold text-white fs-5" id="line-total-count">--</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Current Density:</span>
+                    <span class="badge bg-warning" id="density-badge">CALCULATING</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera Information Card -->
+        <div class="traffic-card mb-4">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-info-circle text-purple"></i> Camera Registry Metadata</h5>
+            </div>
+            <ul class="list-unstyled mb-0" style="font-size:13px; line-height:2.2;">
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Camera ID:</span>
+                    <span class="fw-bold text-cyan">{{ camera.camera_id }}</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Location:</span>
+                    <span class="text-white text-end text-truncate" style="max-width:200px;">{{ camera.location }}</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Coordinates:</span>
+                    <span class="text-white">{{ camera.latitude }}, {{ camera.longitude }}</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Video File:</span>
+                    <span class="text-purple"><code>{{ camera.video_file }}</code></span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Video Path Verified:</span>
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Available on Disk</span>
+                </li>
+                <li class="d-flex justify-content-between">
+                    <span class="text-muted">Tracker:</span>
+                    <span class="text-cyan">ByteTrack v8</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Upload & Replace Video Card -->
+        <div class="traffic-card mb-4" style="border:1px dashed var(--accent-cyan);">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-cloud-arrow-up-fill text-cyan"></i> Custom Video Feed</h5>
+            </div>
+            <p class="text-muted small mb-3">Upload any traffic video to replace this camera's stream. Real YOLOv8 will immediately detect vehicles and count crossings.</p>
+            <form method="POST" action="{% url 'cameras:update_video' camera.camera_id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <input type="file" name="video_file" class="form-control form-control-sm form-control-custom" accept=".mp4,.avi,.mov,.mkv,.webm" required>
+                </div>
+                <button type="submit" class="btn btn-sm btn-cyan w-100">
+                    <i class="bi bi-play-circle-fill me-1"></i> Upload & Run Detection
+                </button>
+            </form>
+        </div>
+
+        <!-- Action Links -->
+        <div class="traffic-card">
+            <div class="d-grid gap-2">
+                <a href="{% url 'signals:index' %}?camera_id={{ camera.camera_id }}" class="btn btn-purple">
+                    <i class="bi bi-stoplights me-1"></i> Recommend Signal Timing
+                </a>
+                <a href="{% url 'prediction:index' %}?camera_id={{ camera.camera_id }}" class="btn btn-outline-purple">
+                    <i class="bi bi-graph-up me-1"></i> Predict Future Volume
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Upload for Detail View -->
+<div class="modal fade" id="uploadDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#130a24; border:1px solid rgba(168,85,247,0.4); border-radius:12px;">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-cloud-upload-fill text-cyan me-2"></i>Upload Video to {{ camera.camera_id }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="cursor:pointer;"></button>
+            </div>
+            <form method="POST" action="{% url 'cameras:update_video' camera.camera_id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Upload any traffic MP4 video. The feed will instantly switch, running Ultralytics YOLOv8 inference 
+                        and ByteTrack vehicle counting on the new video.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold">Select Video File (.mp4, .avi, .mov)</label>
+                        <input type="file" name="video_file" class="form-control form-control-custom" accept=".mp4,.avi,.mov,.mkv,.webm" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="cursor:pointer;">Cancel</button>
+                    <button type="submit" class="btn btn-cyan">
+                        <i class="bi bi-check2-circle me-1"></i> Upload & Start AI Detection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Emergency Accident Detected Pop-up Modal -->
+<div class="modal fade" id="accidentAlertModal" tabindex="-1" aria-labelledby="accidentModalLabel" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered" style="z-index: 1070; pointer-events: auto;">
+        <div class="modal-content text-white" style="background: linear-gradient(145deg, #2b0b14 0%, #15060b 100%); border: 2px solid #ef4444; border-radius: 16px; box-shadow: 0 0 50px rgba(239, 68, 68, 0.7); pointer-events: auto;">
+            <!-- Modal Header -->
+            <div class="modal-header border-bottom border-danger border-opacity-30 pb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:48px; height:48px; border-radius:50%; background:#ef4444; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 0 20px #ef4444;" class="animate-pulse">
+                        <i class="bi bi-exclamation-octagon-fill text-white"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger mb-1" style="font-size:11px;">CRITICAL COLLISION INCIDENT</span>
+                        <h5 class="modal-title fw-extrabold text-white mb-0" id="accidentModalLabel">
+                            🚨 VEHICLE ACCIDENT DETECTED!
+                        </h5>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" onclick="closeAccidentModal()" aria-label="Close" style="cursor:pointer; z-index:1080;"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body py-4">
+                <div class="p-3 rounded mb-3" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-white fw-bold"><i class="bi bi-camera-video me-1 text-danger"></i> Monitored Camera:</span>
+                        <span class="badge bg-danger fs-6" id="acc-cam-id">CAM-04</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-white fw-bold"><i class="bi bi-geo-alt me-1 text-danger"></i> Sector Location:</span>
+                        <span class="text-light small text-end fw-semibold" id="acc-location">Metro Highway Junction - Western Express Pier 14</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-white fw-bold"><i class="bi bi-exclamation-triangle me-1 text-warning"></i> Incident Category:</span>
+                        <span class="text-warning fw-bold small">Multi-Vehicle Collision / Stoppage</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-white fw-bold"><i class="bi bi-distribute-vertical me-1 text-info"></i> Impact Area:</span>
+                        <span class="text-info fw-bold small" id="acc-lane">Lane 2 & Lane 3 Blocked</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-white fw-bold"><i class="bi bi-clock me-1 text-danger"></i> Detection Status:</span>
+                        <span class="badge bg-danger animate-pulse">ACTIVE HAZARD</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-0" style="background:rgba(185,28,28,0.25); border:1px solid #ef4444;">
+                    <i class="bi bi-shield-fill-exclamation fs-3 text-danger flex-shrink-0"></i>
+                    <div>
+                        <strong>AI Vision Alert:</strong> High deceleration stoppage vector detected. Automatic dispatch notification routed to Traffic Control Room.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer border-top border-danger border-opacity-30 pt-3">
+                <button type="button" class="btn btn-outline-light btn-sm" onclick="closeAccidentModal()" style="cursor:pointer;">
+                    <i class="bi bi-x-circle me-1"></i> Dismiss & Close
+                </button>
+                <a href="{% url 'incidents:index' %}" class="btn btn-outline-warning btn-sm" style="cursor:pointer;">
+                    <i class="bi bi-journal-text me-1"></i> View Incident Console
+                </a>
+                <button type="button" class="btn btn-danger btn-sm px-3 fw-bold" onclick="acknowledgeAccidentPopup()" style="cursor:pointer;">
+                    <i class="bi bi-check2-circle me-1"></i> Acknowledge & Dispatch Units
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let isPaused = false;
+    let currentMode = 'yolo';
+    let accidentPopupTriggered = false;
+    let accidentModalInstance = null;
+    let lastAccidentDetails = null;
+
+    const streamImg = document.getElementById('active-live-stream');
+    const playPauseBtn = document.getElementById('btn-play-pause');
+
+    // Move modal directly to <body> so no parent stacking context ever traps it behind backdrop
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalEl = document.getElementById('accidentAlertModal');
+        if (modalEl && modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+    });
+
+    // Audio alarm generator using Web Audio API (cross-browser, zero external files)
+    function playSirenAlarm() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.35);
+            
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.35);
+        } catch (e) {
+            console.warn('Web Audio error:', e);
+        }
+    }
+
+    function showAccidentPopup(details) {
+        if (accidentPopupTriggered) return;
+        accidentPopupTriggered = true;
+        lastAccidentDetails = details;
+
+        if (details) {
+            if (details.camera_id) document.getElementById('acc-cam-id').textContent = details.camera_id;
+            if (details.location) document.getElementById('acc-location').textContent = details.location;
+            if (details.lane) document.getElementById('acc-lane').textContent = details.lane;
+        }
+
+        // Play alarm sound
+        playSirenAlarm();
+        setTimeout(playSirenAlarm, 400);
+
+        // Display modal pop-up
+        const modalEl = document.getElementById('accidentAlertModal');
+        if (modalEl) {
+            // Ensure modal is in body
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            accidentModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            accidentModalInstance.show();
+        }
+
+        // Show persistent warning banner above feed
+        const banner = document.getElementById('camera-accident-banner');
+        if (banner) banner.classList.remove('d-none');
+    }
+
+    function closeAccidentModal() {
+        const modalEl = document.getElementById('accidentAlertModal');
+        if (modalEl) {
+            try {
+                const inst = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                if (inst) inst.hide();
+            } catch (e) {
+                console.warn('Bootstrap hide error:', e);
+            }
+            // Direct DOM cleanup guarantee
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.removeAttribute('aria-modal');
+        }
+        // Remove any modal backdrops & restore body scrolling
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    }
+
+    function reopenAccidentPopup() {
+        const modalEl = document.getElementById('accidentAlertModal');
+        if (modalEl) {
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            accidentModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            accidentModalInstance.show();
+        }
+    }
+
+    function acknowledgeAccidentPopup() {
+        closeAccidentModal();
+        const banner = document.getElementById('camera-accident-banner');
+        if (banner) {
+            banner.innerHTML = `
+                <div class="d-flex align-items-center gap-2 py-1">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                    <strong class="text-white">Accident on CAM-04 Acknowledged. Emergency units notified.</strong>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="reopenAccidentPopup()">
+                        <i class="bi bi-arrow-repeat me-1"></i> Reopen Pop-up
+                    </button>
+                    <a href="/incidents/" class="btn btn-sm btn-outline-warning">View Incidents Log</a>
+                </div>
+            `;
+            banner.style.background = 'linear-gradient(90deg, #1e1b4b 0%, #064e3b 100%)';
+            banner.style.borderColor = '#10b981';
+        }
+    }
+
+    function switchStreamMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-mode-yolo').classList.toggle('active', mode === 'yolo');
+        document.getElementById('btn-mode-raw').classList.toggle('active', mode === 'raw');
+        streamImg.src = `/cameras/{{ camera.camera_id }}/stream/?mode=${mode}&t=${new Date().getTime()}`;
+    }
+
+    function togglePlayback() {
+        if (!isPaused) {
+            streamImg.src = '';
+            isPaused = true;
+            playPauseBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Resume Feed';
+            playPauseBtn.classList.replace('btn-purple', 'btn-success');
+        } else {
+            isPaused = false;
+            switchStreamMode(currentMode);
+            playPauseBtn.innerHTML = '<i class="bi bi-pause-fill me-1"></i> Pause Feed';
+            playPauseBtn.classList.replace('btn-success', 'btn-purple');
+        }
+    }
+
+    function refreshFeed() {
+        isPaused = false;
+        accidentPopupTriggered = false; // Allow trigger on refresh
+        switchStreamMode(currentMode);
+    }
+
+    // Dynamic stats polling every 2 seconds
+    async function updateCameraStats() {
+        if (isPaused) return;
+        try {
+            const resp = await fetch('/cameras/{{ camera.camera_id }}/api/stats/');
+            const data = await resp.json();
+            if (data && data.stats) {
+                const s = data.stats;
+                document.getElementById('live-active-counter').textContent = `${s.active_count} Active`;
+                document.getElementById('count-cars').textContent = s.active_by_class.car || 0;
+                document.getElementById('count-motorcycles').textContent = s.active_by_class.motorcycle || 0;
+                document.getElementById('count-buses').textContent = s.active_by_class.bus || 0;
+                document.getElementById('count-trucks').textContent = s.active_by_class.truck || 0;
+                document.getElementById('line-total-count').textContent = s.line_counted_total || 0;
+
+                const badge = document.getElementById('density-badge');
+                badge.textContent = s.density_category || 'MODERATE';
+                badge.className = `badge bg-${s.density_color || 'info'}`;
+
+                // TRIGGER ACCIDENT POPUP MESSAGE
+                if (s.accident_detected && !accidentPopupTriggered) {
+                    showAccidentPopup(s.accident_details);
+                }
+            }
+        } catch (e) {
+            console.warn('Stats poll error:', e);
+        }
+    }
+
+    setInterval(updateCameraStats, 2000);
+    updateCameraStats();
+</script>
+{% endblock %}

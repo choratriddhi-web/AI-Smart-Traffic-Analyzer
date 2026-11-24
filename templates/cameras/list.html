@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}CCTV Camera Feeds - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-camera-video-fill text-purple"></i> CCTV Cameras & Custom Video Monitoring{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="fw-bold text-white mb-0">Active Surveillance Feeds</h5>
+        <a href="{% url 'cameras:upload' %}" class="btn btn-cyan">
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload Custom Video for Detection & Counting
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for cam in cameras %}
+    <div class="col-md-6 col-lg-6">
+        <div class="traffic-card glow-purple p-0 overflow-hidden">
+            <!-- Header bar with ID and Status -->
+            <div class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-20">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-purple px-2 py-1 fs-6">{{ cam.camera_id }}</span>
+                    <h5 class="fw-bold text-white mb-0">{{ cam.name }}</h5>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if cam.is_custom_upload %}
+                    <span class="badge bg-info text-dark">CUSTOM VIDEO</span>
+                    {% endif %}
+                    <span class="badge bg-danger"><i class="bi bi-broadcast me-1"></i> SIMULATED LIVE</span>
+                    <span class="badge bg-success">{{ cam.status }}</span>
+                </div>
+            </div>
+
+            <!-- Video Stream Preview -->
+            <div class="position-relative" style="background:#000; height:320px;">
+                <img src="/cameras/{{ cam.camera_id }}/stream/?mode=yolo"
+                     alt="{{ cam.name }}"
+                     class="w-100 h-100 object-fit-cover">
+
+                <div class="position-absolute bottom-0 start-0 m-3 p-2 rounded" style="background:rgba(19,10,36,0.85); backdrop-filter:blur(6px); border:1px solid rgba(168,85,247,0.3);">
+                    <small class="text-white d-block"><i class="bi bi-geo-alt text-cyan"></i> {{ cam.location }}</small>
+                    <small class="text-muted">{{ cam.resolution }} &bull; {{ cam.fps }} FPS &bull; ByteTrack Enabled</small>
+                </div>
+            </div>
+
+            <!-- Metrics & Action -->
+            <div class="p-3">
+                <div class="row text-center g-2 mb-3">
+                    <div class="col-4">
+                        <div class="p-2 rounded" style="background:rgba(168,85,247,0.08);">
+                            <small class="text-muted d-block" style="font-size:11px;">VEHICLES IN FRAME</small>
+                            <span class="fs-5 fw-bold text-cyan">{{ cam.active_count|default:10 }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded" style="background:rgba(168,85,247,0.08);">
+                            <small class="text-muted d-block" style="font-size:11px;">LINE COUNTED</small>
+                            <span class="fs-5 fw-bold text-white">{{ cam.line_total|default:24 }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded" style="background:rgba(168,85,247,0.08);">
+                            <small class="text-muted d-block" style="font-size:11px;">DENSITY LEVEL</small>
+                            <span class="badge bg-{{ cam.density_color|default:'info' }} mt-1">{{ cam.density|default:'MODERATE' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center gap-2 pt-2 border-top border-secondary border-opacity-10">
+                    <button class="btn btn-sm btn-outline-cyan" data-bs-toggle="modal" data-bs-target="#uploadModal-{{ cam.camera_id }}">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload Video
+                    </button>
+                    <a href="{% url 'cameras:detail' cam.camera_id %}" class="btn btn-sm btn-purple">
+                        <i class="bi bi-arrows-fullscreen me-1"></i> Open Camera
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Upload Modal for {{ cam.camera_id }} -->
+        <div class="modal fade" id="uploadModal-{{ cam.camera_id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background:#130a24; border:1px solid rgba(168,85,247,0.4); border-radius:12px;">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                        <h5 class="modal-title text-white">
+                            <i class="bi bi-cloud-upload-fill text-cyan me-2"></i>Upload Video to {{ cam.camera_id }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{% url 'cameras:update_video' cam.camera_id %}?from=list" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p class="text-muted small mb-3">
+                                Select any traffic video from your computer (MP4, AVI, MOV). Once uploaded, 
+                                <strong>{{ cam.camera_id }}</strong> will immediately process this video with real YOLOv8 
+                                vehicle detection (cars, bikes, buses, trucks) and virtual line counting.
+                            </p>
+                            <div class="mb-3">
+                                <label class="form-label text-white small fw-bold">Select Video File (.mp4, .avi, .mov)</label>
+                                <input type="file" name="video_file" class="form-control form-control-custom" accept=".mp4,.avi,.mov,.mkv,.webm" required>
+                            </div>
+                            <div class="p-2 rounded small" style="background:rgba(6,182,212,0.1); border:1px dashed var(--accent-cyan); color:#67e8f9;">
+                                <i class="bi bi-info-circle me-1"></i> Current video: <code>{{ cam.video_file }}</code>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top border-secondary border-opacity-25">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-cyan">
+                                <i class="bi bi-check2-circle me-1"></i> Upload & Start AI Detection
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

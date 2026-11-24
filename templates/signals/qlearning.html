@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Q-Learning RL Simulation - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-diagram-3-fill text-purple"></i> Reinforcement Learning Q-Learning Controller{% endblock %}
+
+{% block content %}
+<!-- Academic Disclaimer Alert -->
+<div class="alert alert-info py-2 px-3 mb-4 d-flex align-items-center gap-2" style="background:rgba(6,182,212,0.15); border:1px solid #06b6d4; color:#fff;">
+    <i class="bi bi-mortarboard-fill text-cyan fs-4"></i>
+    <div>
+        <strong>ACADEMIC RESEARCH & REINFORCEMENT LEARNING SIMULATION:</strong>
+        {{ sim_data.disclaimer }}
+    </div>
+</div>
+
+<!-- Comparison Metrics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="traffic-card">
+            <div class="metric-box">
+                <div class="metric-icon purple">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="metric-data">
+                    <h3 class="text-success">-{{ sim_data.improvements.waiting_time_reduction_percent }}%</h3>
+                    <p>Wait Time Reduction</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="traffic-card">
+            <div class="metric-box">
+                <div class="metric-icon cyan">
+                    <i class="bi bi-car-front-fill"></i>
+                </div>
+                <div class="metric-data">
+                    <h3 class="text-cyan">-{{ sim_data.improvements.queue_length_reduction_percent }}%</h3>
+                    <p>Queue Dissipation Gain</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="traffic-card">
+            <div class="metric-box">
+                <div class="metric-icon amber">
+                    <i class="bi bi-stopwatch"></i>
+                </div>
+                <div class="metric-data">
+                    <h3>{{ sim_data.q_learning.avg_wait_sec }}s</h3>
+                    <p>RL Mean Delay (vs {{ sim_data.fixed_time.avg_wait_sec }}s Fixed)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="traffic-card">
+            <div class="metric-box">
+                <div class="metric-icon magenta">
+                    <i class="bi bi-layers-fill"></i>
+                </div>
+                <div class="metric-data">
+                    <h3>{{ sim_data.q_learning.avg_queue }}</h3>
+                    <p>RL Avg Queue (vs {{ sim_data.fixed_time.avg_queue }} Fixed)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comparison Chart -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="traffic-card glow-purple">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-graph-up text-purple"></i> Episode Delay Progression: Fixed-Time vs Adaptive Q-Learning</h5>
+                <button class="btn btn-sm btn-outline-purple" onclick="runNewSimulation()">
+                    <i class="bi bi-arrow-repeat me-1"></i> Run New Episode Sim
+                </button>
+            </div>
+            <div style="height: 320px;">
+                <canvas id="chart-rl-comparison"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- RL Formulation Specifications -->
+    <div class="col-lg-4">
+        <div class="traffic-card h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-cpu text-cyan"></i> Markov Decision Process</h5>
+            </div>
+            <div class="small lh-lg">
+                <strong class="text-purple d-block"><i class="bi bi-arrow-right-short"></i> State Space S (27 Discrete States):</strong>
+                <span class="text-muted">Queue (Low/Med/High) &times; Density (Low/Med/High) &times; Delay (&lt;30s, 30-60s, &gt;60s)</span>
+
+                <strong class="text-cyan d-block mt-3"><i class="bi bi-arrow-right-short"></i> Action Space A (4 Discrete Actions):</strong>
+                <ul class="text-muted ps-3 mb-2" style="font-size:12px;">
+                    <li><code>INCREASE_GREEN_10S</code> (+10 sec phase)</li>
+                    <li><code>DECREASE_GREEN_10S</code> (-10 sec phase)</li>
+                    <li><code>MAINTAIN_DURATION</code> (Hold current cycle)</li>
+                    <li><code>SWITCH_PHASE</code> (Immediate phase transition)</li>
+                </ul>
+
+                <strong class="text-warning d-block mt-2"><i class="bi bi-arrow-right-short"></i> Reward Function R(s, a):</strong>
+                <div class="p-2 rounded mt-1 text-white" style="background:#130a24; border:1px solid rgba(168,85,247,0.3); font-family:monospace; font-size:11px;">
+                    R = 2.0 &times; &Delta;Queue - 0.05 &times; WaitDelay - Penalty
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const steps = {{ sim_data.steps|safe }};
+    const fixedWaits = {{ sim_data.fixed_time.waiting_times|safe }};
+    const rlWaits = {{ sim_data.q_learning.waiting_times|safe }};
+
+    const ctx = document.getElementById('chart-rl-comparison').getContext('2d');
+    const rlChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: steps.map(s => `Step ${s}`),
+            datasets: [
+                {
+                    label: 'Fixed-Time Signal Delay (sec)',
+                    data: fixedWaits,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.3
+                },
+                {
+                    label: 'Q-Learning Adaptive Controller Delay (sec)',
+                    data: rlWaits,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: 'rgba(168, 85, 247, 0.1)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { color: 'rgba(168, 85, 247, 0.1)' }, ticks: { color: '#94a3b8' }, title: { display: true, text: 'Seconds of Delay', color: '#94a3b8' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#f8fafc' } }
+            }
+        }
+    });
+
+    async function runNewSimulation() {
+        try {
+            const resp = await fetch('/signals/api/q-learning/simulate/?steps=20');
+            const data = await resp.json();
+            rlChart.data.datasets[0].data = data.fixed_time.waiting_times;
+            rlChart.data.datasets[1].data = data.q_learning.waiting_times;
+            rlChart.update();
+        } catch (e) {
+            console.error('Simulation update error:', e);
+        }
+    }
+</script>
+{% endblock %}

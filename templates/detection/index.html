@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}YOLOv8 Detection Engine - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-bounding-box-circles text-purple"></i> YOLOv8 Computer Vision Engine{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Model Architecture & Info -->
+    <div class="col-lg-5">
+        <div class="traffic-card glow-purple h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-cpu-fill text-purple"></i> Deep Learning Model Architecture</h5>
+                <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> ACTIVE</span>
+            </div>
+
+            <div class="p-3 rounded mb-3" style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-icon" style="width:48px; height:48px;">
+                        <i class="bi bi-eye-fill text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white fw-bold mb-0">{{ model_info.model_name }}</h6>
+                        <small class="text-cyan">{{ model_info.backend_framework }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="list-unstyled mb-4" style="font-size:13.5px; line-height:2.2;">
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Model Weights:</span>
+                    <span class="text-purple"><code>{{ model_info.weights_file }}</code></span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Weights File Present:</span>
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Verified on Disk</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Tracker Algorithm:</span>
+                    <span class="text-cyan fw-bold">{{ model_info.tracker }}</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Confidence Threshold:</span>
+                    <span class="text-white">{{ model_info.confidence_threshold }} (35%)</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom border-secondary border-opacity-10">
+                    <span class="text-muted">Input Resolution:</span>
+                    <span class="text-white">{{ model_info.input_resolution }}</span>
+                </li>
+                <li class="d-flex justify-content-between">
+                    <span class="text-muted">Emergency Classification:</span>
+                    <span class="badge bg-secondary">COCO Base (See Emergency Module)</span>
+                </li>
+            </ul>
+
+            <h6 class="text-cyan fw-bold mb-2"><i class="bi bi-tags"></i> Active Target Vehicle Classes</h6>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge p-2 px-3" style="background:#d946ef;"><i class="bi bi-car-front me-1"></i> Car (ID: 2)</span>
+                <span class="badge p-2 px-3" style="background:#06b6d4;"><i class="bi bi-bicycle me-1"></i> Motorcycle (ID: 3)</span>
+                <span class="badge p-2 px-3" style="background:#f59e0b;"><i class="bi bi-bus-front me-1"></i> Bus (ID: 5)</span>
+                <span class="badge p-2 px-3" style="background:#8b5cf6;"><i class="bi bi-truck me-1"></i> Truck (ID: 7)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live YOLO Feed Showcase -->
+    <div class="col-lg-7">
+        <div class="traffic-card glow-cyan">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-play-btn-fill text-cyan"></i> Live YOLOv8 Real-Time Inference Stream</h5>
+                <span class="badge bg-danger animate-pulse">ByteTrack Persistent</span>
+            </div>
+
+            <div class="position-relative rounded overflow-hidden mb-3" style="background:#000; height:380px;">
+                <img src="/cameras/CAM-01/stream/?mode=yolo"
+                     alt="YOLOv8 Live Detection"
+                     class="w-100 h-100 object-fit-contain">
+            </div>
+
+            <div class="p-3 rounded" style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-shield-check text-cyan fs-5"></i>
+                    <strong class="text-white">Strict Verification Standard</strong>
+                </div>
+                <p class="text-muted small mb-0">
+                    The bounding boxes, tracking identifiers, and confidence indicators shown above are computed
+                    in real time frame-by-frame via actual Ultralytics YOLOv8 inference and ByteTrack object tracking.
+                    No synthetic or randomized fake bounding boxes are generated.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

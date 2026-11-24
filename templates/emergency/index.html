@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Vehicle Monitoring - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-hospital-fill text-purple"></i> Priority Emergency Vehicle Corridor{% endblock %}
+
+{% block content %}
+<!-- Model Status Honest Disclosure Banner -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="traffic-card glow-cyan">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="metric-icon amber" style="width:44px; height:44px;">
+                        <i class="bi bi-shield-exclamation fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-white mb-0">Emergency AI Classification Status</h5>
+                        <span class="badge bg-warning text-dark mt-1">{{ model_status.status_label }}</span>
+                    </div>
+                </div>
+                <span class="badge bg-info text-dark">Demonstration Mode Enabled</span>
+            </div>
+            <p class="text-muted small mb-0 lh-base">
+                {{ model_status.explanation }}
+                Ordinary cars, vans, or trucks will NOT be falsely reported as emergency vehicles.
+                To validate Smart City Green Wave preemption, use the Demonstration Trigger below.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Emergency Logs & Priority Corridors (8 Cols) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-purple h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-activity text-purple"></i> Emergency Transit & Green Wave Log</h5>
+                <span class="badge bg-purple">{{ emergency_logs|length }} Events Logged</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Vehicle Type</th>
+                            <th>Corridor / Camera</th>
+                            <th>Priority State</th>
+                            <th>Logged Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in emergency_logs %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-white"><i class="bi bi-hospital text-danger me-1"></i> {{ log.vehicle_type }}</div>
+                                <small class="text-dim">Conf: {{ log.confidence }} (Demo)</small>
+                            </td>
+                            <td><span class="badge bg-purple">{{ log.camera_id }}</span></td>
+                            <td>
+                                {% if 'Active' in log.status %}
+                                <span class="badge bg-danger animate-pulse"><i class="bi bi-lightning-fill"></i> {{ log.status }}</span>
+                                {% else %}
+                                <span class="badge bg-success">{{ log.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td><small class="text-muted">{{ log.timestamp|date:"M d, H:i:s" }}</small></td>
+                            <td>
+                                {% if 'Active' in log.status %}
+                                <a href="{% url 'emergency:clear' log.id %}" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:11px;">
+                                    Clear Wave
+                                </a>
+                                {% else %}
+                                <small class="text-muted">Cleared</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No emergency vehicle events registered.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Green Wave Corridor Simulator Trigger (4 Cols) -->
+    <div class="col-lg-4">
+        <div class="traffic-card glow-cyan">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-broadcast text-cyan"></i> Demonstration Mode Trigger</h5>
+            </div>
+            <p class="text-muted small">Simulate incoming ambulance or fire responder to activate dynamic Green Wave signal clearing.</p>
+
+            <form method="POST" action="{% url 'emergency:trigger' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label text-white small fw-bold">Emergency Vehicle Type</label>
+                    <select name="vehicle_type" class="form-select form-select-custom">
+                        <option value="Ambulance (ICU Critical Care)" selected>Ambulance (ICU Critical Care)</option>
+                        <option value="Fire Brigade Emergency Engine">Fire Brigade Emergency Engine</option>
+                        <option value="Police Highway Patrol Rapid Response">Police Highway Patrol Rapid Response</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white small fw-bold">Target Route / Corridor</label>
+                    <select name="camera_id" class="form-select form-select-custom">
+                        <option value="CAM-02" selected>CAM-02 - Hospital Corridor (Trauma Way)</option>
+                        <option value="CAM-01">CAM-01 - Downtown Intersection</option>
+                        <option value="CAM-03">CAM-03 - North Ring Roundabout</option>
+                        <option value="CAM-04">CAM-04 - Metro Highway Junction</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-danger w-100 py-2">
+                    <i class="bi bi-lightning-charge-fill me-1"></i> Trigger Green Wave Priority Preemption
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

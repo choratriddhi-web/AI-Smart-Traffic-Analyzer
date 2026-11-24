@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Traffic Prediction - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-graph-up-arrow text-purple"></i> Machine Learning Traffic Forecasting{% endblock %}
+
+{% block content %}
+<!-- Disclaimer Alert -->
+<div class="alert alert-info py-2 px-3 mb-4 d-flex align-items-center gap-2" style="background:rgba(6,182,212,0.12); border:1px solid #06b6d4; color:#fff;">
+    <i class="bi bi-info-circle-fill text-cyan fs-5"></i>
+    <div>
+        <strong>DISCLAIMER:</strong> {{ prediction.disclaimer }}
+        {% if prediction.is_bootstrapping %}
+        <span class="badge bg-secondary ms-2">Bootstrapping Historical Baseline</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Camera selector & Prediction Cards -->
+    <div class="col-12">
+        <div class="traffic-card glow-purple">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-clock-history text-purple me-2"></i>Select Monitored Sector:</h5>
+                    <form method="GET" class="d-inline">
+                        <select name="camera_id" class="form-select form-select-custom py-1 px-3" onchange="this.form.submit()">
+                            {% for c in cameras %}
+                            <option value="{{ c }}" {% if c == selected_camera %}selected{% endif %}>{{ c }} Corridor</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small">Current Volume:</span>
+                    <span class="fs-4 fw-bold text-white">{{ prediction.current_volume }} veh</span>
+                    <span class="badge {% if prediction.trend == 'INCREASING' %}bg-danger{% elif prediction.trend == 'DECREASING' %}bg-success{% else %}bg-info text-dark{% endif %} ms-2">
+                        <i class="bi bi-arrow-{% if prediction.trend == 'INCREASING' %}up{% elif prediction.trend == 'DECREASING' %}down{% else %}right{% endif %}"></i>
+                        {{ prediction.trend }} TREND
+                    </span>
+                </div>
+            </div>
+
+            <!-- Future Intervals Predictions Cards (5m, 15m, 30m) -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 rounded text-center" style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.35);">
+                        <span class="badge bg-purple mb-2">+5 MINUTES HORIZON</span>
+                        <h2 class="display-5 fw-bold text-white mb-0">{{ prediction.predictions.5m.predicted_volume }}</h2>
+                        <small class="text-muted d-block">Estimated Vehicles at {{ prediction.predictions.5m.projected_timestamp }}</small>
+                        <span class="badge bg-{% if prediction.predictions.5m.predicted_density == 'HIGH' or prediction.predictions.5m.predicted_density == 'VERY HIGH' %}warning text-dark{% else %}success{% endif %} mt-2">
+                            Predicted: {{ prediction.predictions.5m.predicted_density }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 rounded text-center" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.35);">
+                        <span class="badge bg-cyan text-dark mb-2" style="background:#06b6d4;">+15 MINUTES HORIZON</span>
+                        <h2 class="display-5 fw-bold text-white mb-0">{{ prediction.predictions.15m.predicted_volume }}</h2>
+                        <small class="text-muted d-block">Estimated Vehicles at {{ prediction.predictions.15m.projected_timestamp }}</small>
+                        <span class="badge bg-{% if prediction.predictions.15m.predicted_density == 'HIGH' or prediction.predictions.15m.predicted_density == 'VERY HIGH' %}warning text-dark{% else %}info text-dark{% endif %} mt-2">
+                            Predicted: {{ prediction.predictions.15m.predicted_density }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 rounded text-center" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.35);">
+                        <span class="badge bg-magenta mb-2" style="background:#ec4899;">+30 MINUTES HORIZON</span>
+                        <h2 class="display-5 fw-bold text-white mb-0">{{ prediction.predictions.30m.predicted_volume }}</h2>
+                        <small class="text-muted d-block">Estimated Vehicles at {{ prediction.predictions.30m.projected_timestamp }}</small>
+                        <span class="badge bg-{% if prediction.predictions.30m.predicted_density == 'HIGH' or prediction.predictions.30m.predicted_density == 'VERY HIGH' %}danger{% else %}info text-dark{% endif %} mt-2">
+                            Predicted: {{ prediction.predictions.30m.predicted_density }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Regression Chart -->
+<div class="row">
+    <div class="col-12">
+        <div class="traffic-card glow-cyan">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-bezier2 text-cyan"></i> Fitted Ordinary Least Squares Regression Curve & Projections</h5>
+                <span class="badge bg-dark border border-secondary text-light">{{ prediction.model_type }}</span>
+            </div>
+            <div style="height: 340px;">
+                <canvas id="chart-prediction-regression"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const historyTimes = {{ prediction.historical_timeline|safe }};
+    const historyCounts = {{ prediction.historical_counts|safe }};
+    const projectedPoints = {{ prediction.projected_points|safe }};
+
+    const allLabels = [...historyTimes, ...projectedPoints.map(p => p.time)];
+    const historicalSeries = [...historyCounts, ...projectedPoints.map(() => null)];
+    const projectionSeries = [
+        ...historyCounts.slice(0, -1).map(() => null),
+        historyCounts[historyCounts.length - 1],
+        ...projectedPoints.map(p => p.count)
+    ];
+
+    const ctx = document.getElementById('chart-prediction-regression').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: allLabels,
+            datasets: [
+                {
+                    label: 'Historical Detected Vehicles',
+                    data: historicalSeries,
+                    borderColor: '#a855f7',
+                    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                    fill: false,
+                    tension: 0.2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff'
+                },
+                {
+                    label: 'Scikit-learn Regression Projection (Future Trend)',
+                    data: projectionSeries,
+                    borderColor: '#06b6d4',
+                    borderDash: [6, 6],
+                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#ec4899'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: 'rgba(168, 85, 247, 0.1)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { color: 'rgba(168, 85, 247, 0.1)' }, ticks: { color: '#94a3b8' }, title: { display: true, text: 'Vehicle Volume', color: '#94a3b8' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#f8fafc' } }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Smart Traffic Analyzer{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Cyber-Purple Theme CSS -->
+    <link rel="stylesheet" href="/static/css/purple_theme.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <a href="{% url 'gateway' %}" class="sidebar-brand text-decoration-none">
+            <div class="brand-icon">
+                <i class="bi bi-cpu-fill text-white"></i>
+            </div>
+            <div class="brand-text">
+                <h5>TRAFFIC AI</h5>
+                <span>{% if is_authority %}Control Room{% else %}Citizen Portal{% endif %}</span>
+            </div>
+        </a>
+
+        <ul class="sidebar-menu">
+            {% if is_authority %}
+            <!-- Authority / Admin Navigation Menu -->
+            <li class="menu-category">Command & Telemetry</li>
+            <li class="menu-item">
+                <a href="{% url 'dashboard:index' %}" class="menu-link {% if request.resolver_match.url_name == 'index' and 'dashboard' in request.path %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Admin Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'cameras:list' %}" class="menu-link {% if request.resolver_match.url_name == 'list' and 'cameras' in request.path %}active{% endif %}">
+                    <i class="bi bi-camera-video"></i>
+                    <span>CCTV Monitoring</span>
+                    <span class="menu-badge bg-primary text-white">4 Live</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'cameras:upload' %}" class="menu-link {% if 'cameras/upload' in request.path %}active{% endif %}" style="border: 1px dashed rgba(6,182,212,0.4); background: rgba(6,182,212,0.08);">
+                    <i class="bi bi-cloud-arrow-up text-cyan"></i>
+                    <span class="text-white fw-bold">Upload Video Detection</span>
+                    <span class="menu-badge bg-cyan text-dark" style="background:#06b6d4;">NEW</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'traffic:lanes' %}" class="menu-link {% if 'traffic/lanes' in request.path %}active{% endif %}">
+                    <i class="bi bi-distribute-vertical"></i>
+                    <span>Lane Management</span>
+                </a>
+            </li>
+
+            <li class="menu-category">AI & Machine Learning</li>
+            <li class="menu-item">
+                <a href="{% url 'signals:index' %}" class="menu-link {% if request.resolver_match.url_name == 'index' and 'signals' in request.path %}active{% endif %}">
+                    <i class="bi bi-stoplights"></i>
+                    <span>Signal Optimization</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'signals:qlearning' %}" class="menu-link {% if 'q-learning' in request.path %}active{% endif %}">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Q-Learning RL Sim</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'prediction:index' %}" class="menu-link {% if 'prediction' in request.path %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Traffic Prediction (ML)</span>
+                    <span class="menu-badge bg-secondary text-white">OLS</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'incidents:index' %}" class="menu-link {% if 'incidents' in request.path %}active{% endif %}">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Accident Monitoring</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'emergency:index' %}" class="menu-link {% if 'emergency' in request.path %}active{% endif %}">
+                    <i class="bi bi-hospital"></i>
+                    <span>Emergency Vehicles</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'analytics:index' %}" class="menu-link {% if 'analytics' in request.path %}active{% endif %}">
+                    <i class="bi bi-pie-chart"></i>
+                    <span>Traffic Analytics</span>
+                </a>
+            </li>
+
+            <li class="menu-category">Citizen Distress & SOS</li>
+            <li class="menu-item">
+                <a href="{% url 'sos:management' %}" class="menu-link {% if 'sos/management' in request.path %}active{% endif %}">
+                    <i class="bi bi-shield-exclamation text-danger"></i>
+                    <span>SOS Dispatch Inbox</span>
+                    <span class="menu-badge bg-danger text-white animate-pulse" id="sidebar-sos-badge">Alerts</span>
+                </a>
+            </li>
+
+            {% else %}
+            <!-- Public User Navigation Menu (Clean & Citizen-Focused) -->
+            <li class="menu-category">Emergency Citizen Services</li>
+            <li class="menu-item">
+                <button type="button" class="menu-link text-white fw-bold mb-2 w-100 border-0 text-start d-flex align-items-center justify-content-between" onclick="openGlobalSosModal()" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-radius: 8px; box-shadow: 0 0 15px rgba(239,68,68,0.5); cursor:pointer;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-life-preserver text-white fs-5 animate-pulse"></i>
+                        <span>EMERGENCY SOS</span>
+                    </div>
+                    <span class="menu-badge bg-white text-danger fw-bold">SOS</span>
+                </button>
+            </li>
+
+            <li class="menu-category">Citizen Traffic Portal</li>
+            <li class="menu-item">
+                <a href="{% url 'public:dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'dashboard' and 'public' in request.path %}active{% endif %}">
+                    <i class="bi bi-broadcast-pin"></i>
+                    <span>Traffic Conditions</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'public:map' %}" class="menu-link {% if 'public/map' in request.path %}active{% endif %}">
+                    <i class="bi bi-geo-alt-fill text-cyan"></i>
+                    <span>Google Map & Fuel Stations</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'signals:index' %}" class="menu-link {% if 'signals' in request.path %}active{% endif %}">
+                    <i class="bi bi-stoplights text-cyan"></i>
+                    <span>Signal Optimization</span>
+                    <span class="menu-badge bg-cyan text-dark fw-bold" style="background:#06b6d4;">AI</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'prediction:index' %}" class="menu-link {% if 'prediction' in request.path %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow text-cyan"></i>
+                    <span>Traffic Prediction (ML)</span>
+                    <span class="menu-badge bg-secondary text-white">OLS</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'assistant:index' %}" class="menu-link {% if 'assistant' in request.path %}active{% endif %}">
+                    <i class="bi bi-mic-fill text-purple"></i>
+                    <span>AI Voice & Chat Assistant</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'public:sos_status' %}" class="menu-link {% if 'sos/status' in request.path %}active{% endif %}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>My SOS Request Status</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </aside>
+
+    <!-- Main Content Container -->
+    <div class="app-main">
+        <!-- Topbar -->
+        <header class="app-topbar">
+            <div class="topbar-left">
+                <button class="btn btn-outline-purple d-lg-none py-1 px-2" id="sidebar-toggle">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <div class="page-title">
+                    {% block page_title %}
+                    <i class="bi bi-grid-1x2 text-purple"></i> Smart City Traffic Control
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Clock -->
+                <div class="status-pill text-muted d-none d-md-flex">
+                    <i class="bi bi-clock-history text-cyan"></i>
+                    <span id="live-system-clock">18:30:00 UTC+5:30</span>
+                </div>
+
+                {% if is_authority %}
+                <!-- Admin Distress Alert Pill -->
+                <a href="{% url 'sos:management' %}" class="status-pill text-decoration-none text-white position-relative" style="background:rgba(239,68,68,0.15); border-color:#ef4444;" title="Public Citizen Distress Alerts">
+                    <i class="bi bi-bell-fill text-danger animate-pulse"></i>
+                    <span>SOS Alerts</span>
+                    <span class="badge bg-danger rounded-pill ms-1" id="topbar-sos-badge">0</span>
+                </a>
+                {% else %}
+                <!-- Public One-Click SOS Quick Button in Topbar -->
+                <button type="button" class="btn btn-danger btn-sm py-1 px-3 fw-bold d-flex align-items-center gap-1 shadow-sm" onclick="openGlobalSosModal()" title="Trigger Emergency Citizen Distress SOS">
+                    <i class="bi bi-life-preserver animate-pulse"></i>
+                    <span>EMERGENCY SOS</span>
+                </button>
+                {% endif %}
+
+                <!-- User Profile & Role Dropdown -->
+                {% if is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-purple dropdown-toggle py-1 px-3 d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="fw-bold">{{ current_user.username }}</span>
+                        <span class="badge bg-purple ms-1" style="font-size:10px;">{{ user_role }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" style="background:#1b0f33; border-color:#a855f7;">
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i> My Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'gateway' %}"><i class="bi bi-grid-fill text-purple me-2"></i> Portal Gateway</a></li>
+                        {% if is_authority %}
+                        <li><a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="bi bi-speedometer2 me-2"></i> Command Room</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cameras:upload' %}"><i class="bi bi-cloud-arrow-up me-2"></i> Upload Video Detection</a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="{% url 'public:dashboard' %}"><i class="bi bi-globe me-2"></i> Public Citizen Portal</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider" style="border-color:rgba(168,85,247,0.2);"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'accounts:citizen_login' %}" class="btn btn-outline-cyan btn-sm py-1 px-3 fw-bold text-cyan" style="border-color:#06b6d4;">
+                        <i class="bi bi-person-badge me-1"></i> Citizen Sign In
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-purple btn-sm py-1 px-3 fw-bold">
+                        <i class="bi bi-shield-lock me-1"></i> Authority Sign In
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if is_authority %}
+        <!-- Real-Time Citizen SOS Distress Alert Banner for Admin & Traffic Authority -->
+        <div id="live-sos-alert-banner" class="container-fluid px-4 pt-3 d-none">
+            <div class="alert alert-danger py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-lg" style="background:linear-gradient(90deg, #991b1b 0%, #450a0a 100%); border:2px solid #ef4444; border-radius:12px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:48px; height:48px; border-radius:50%; background:#ef4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px;" class="animate-pulse">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-white mb-0" id="live-sos-alert-title">🚨 CRITICAL CITIZEN DISTRESS ALERT RECEIVED</h5>
+                        <p class="text-light mb-0 small" id="live-sos-alert-desc">A citizen has submitted an emergency SOS request.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'sos:management' %}" class="btn btn-light text-danger fw-bold px-3">
+                        <i class="bi bi-eye-fill me-1"></i> View Details & Dispatch
+                    </a>
+                    <button type="button" class="btn btn-outline-light btn-sm" onclick="dismissLiveSosAlert()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Alerts -->
+        <div class="container-fluid px-4 pt-3">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show traffic-card mb-3 py-2 px-3 d-flex align-items-center gap-2 text-white" role="alert" style="background:rgba(23,14,45,0.95); border-left: 4px solid var(--accent-purple);">
+                    <i class="bi bi-info-circle-fill text-purple fs-5"></i>
+                    <div>{{ message }}</div>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Main Body -->
+        <main class="container-fluid px-4 py-3 flex-grow-1">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="py-3 px-4 text-center text-muted border-top border-secondary border-opacity-10" style="font-size:12px;">
+            <span>AI Smart Traffic Analyzer &bull; Smart City Command &bull; Django, PyMongo, YOLOv8 & Scikit-learn</span>
+        </footer>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="/static/js/main.js"></script>
+
+{% if is_authority %}
+<!-- Real-Time SOS Alert Polling for Admin / Traffic Authority -->
+<script>
+    let lastKnownSosCount = 0;
+    let sosAudioDismissed = false;
+
+    function playEmergencySound() {
+        if (sosAudioDismissed) return;
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.6);
+            }
+        } catch(e) {}
+    }
+
+    async function pollLiveSosAlerts() {
+        try {
+            const resp = await fetch('/sos/api/live-alerts/');
+            const data = await resp.json();
+            if (data && data.status === 'success') {
+                const count = data.pending_count || 0;
+                const topbarBadge = document.getElementById('topbar-sos-badge');
+                const sidebarBadge = document.getElementById('sidebar-sos-badge');
+                if (topbarBadge) topbarBadge.textContent = count;
+                if (sidebarBadge) sidebarBadge.textContent = `${count} Alert${count === 1 ? '' : 's'}`;
+
+                const alertBanner = document.getElementById('live-sos-alert-banner');
+                if (count > 0 && alertBanner) {
+                    alertBanner.classList.remove('d-none');
+                    if (data.alerts && data.alerts.length > 0) {
+                        const top = data.alerts[0];
+                        document.getElementById('live-sos-alert-desc').textContent = 
+                            `Ticket #${top.ticket_number}: ${top.emergency_category} reported by ${top.user_name} (${top.contact_phone}) at ${top.address || 'GPS Shared'}.`;
+                    }
+                    if (count > lastKnownSosCount) {
+                        playEmergencySound();
+                    }
+                } else if (alertBanner) {
+                    alertBanner.classList.add('d-none');
+                }
+                lastKnownSosCount = count;
+            }
+        } catch(e) {}
+    }
+
+    function dismissLiveSosAlert() {
+        sosAudioDismissed = true;
+        const banner = document.getElementById('live-sos-alert-banner');
+        if (banner) banner.classList.add('d-none');
+    }
+
+    setInterval(pollLiveSosAlerts, 4000);
+    pollLiveSosAlerts();
+</script>
+{% endif %}
+
+<!-- GLOBAL CITIZEN EMERGENCY SOS DISTRESS MODAL -->
+<div class="modal fade" id="globalSosModal" tabindex="-1" aria-labelledby="globalSosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#130822; border:2px solid #ef4444; border-radius:16px; box-shadow:0 0 40px rgba(239,68,68,0.4);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25" style="background:linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(136,19,55,0.4) 100%);">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:36px; height:36px; border-radius:50%; background:#ef4444; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-shield-exclamation text-white fs-5 animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="globalSosModalLabel">Emergency Citizen SOS Distress</h5>
+                        <small class="text-danger fw-semibold">Direct Broadcast to Traffic Authority Command Room</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4 text-center">
+                <!-- 1-Click Fast Distress Dispatch -->
+                <button type="button" class="btn btn-danger w-100 py-3 mb-2 fw-bold fs-5 shadow-lg d-flex align-items-center justify-content-center gap-2" id="modal-quick-sos-btn" onclick="executeModalQuickSos()">
+                    <i class="bi bi-broadcast fs-3 animate-pulse"></i>
+                    <span>BROADCAST 1-CLICK SOS NOW</span>
+                </button>
+                <div id="modal-sos-feedback" class="small mb-3 text-muted">Transmits live distress signal immediately to Traffic Authority Command Room.</div>
+
+                <div class="position-relative my-3">
+                    <hr class="border-secondary border-opacity-25">
+                    <span class="position-absolute top-50 start-50 translate-middle px-3 text-muted small" style="background:#130822;">OR SUBMIT SPECIFIC DETAILS</span>
+                </div>
+
+                <!-- Detailed SOS Form inside Modal -->
+                <form method="POST" action="{% url 'public:sos_submit' %}" id="modal-sos-form" class="text-start">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold">Emergency Category</label>
+                        <select name="category" class="form-select form-select-custom form-select-sm" required>
+                            <option value="Medical Emergency" selected>Medical Emergency / Ambulance Needed</option>
+                            <option value="Road Accident / Collision">Road Accident / Collision</option>
+                            <option value="Vehicle Breakdown / Flat Tyre">Vehicle Breakdown / Stalled Car</option>
+                            <option value="Hazardous Road Obstruction">Hazardous Road Obstruction</option>
+                            <option value="Fire / Fuel Leakage">Fire / Fuel Leakage</option>
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-white small fw-bold">Your Name</label>
+                            <input type="text" name="name" class="form-control form-control-custom form-control-sm" value="{{ current_user.full_name|default:'' }}" placeholder="Citizen Name" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-white small fw-bold">Contact Phone</label>
+                            <input type="tel" name="phone" class="form-control form-control-custom form-control-sm" value="{{ current_user.phone|default:'' }}" placeholder="+91 98765 00000" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold">Location / Landmark</label>
+                        <input type="text" name="address" class="form-control form-control-custom form-control-sm" value="Central Metro Junction (GPS: 19.0760, 72.8777)" placeholder="Nearby landmark or area...">
+                        <input type="hidden" name="latitude" value="19.0760">
+                        <input type="hidden" name="longitude" value="72.8777">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold">Emergency Situation Notes</label>
+                        <textarea name="details" class="form-control form-control-custom form-control-sm" rows="2" placeholder="Briefly describe what happened..." required>Urgent road or medical assistance requested by citizen.</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-danger w-100 py-2 fw-bold">
+                        <i class="bi bi-send-fill me-1"></i> Send Emergency Distress Ticket
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openGlobalSosModal() {
+        const el = document.getElementById('globalSosModal');
+        if (el) {
+            const m = bootstrap.Modal.getOrCreateInstance(el);
+            m.show();
+        } else {
+            window.location.href = "{% url 'public:dashboard' %}";
+        }
+    }
+
+    async function executeModalQuickSos() {
+        const btn = document.getElementById('modal-quick-sos-btn');
+        const feedback = document.getElementById('modal-sos-feedback');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> BROADCASTING SOS SIGNAL...';
+
+        const formData = new FormData();
+        formData.append('latitude', '19.0760');
+        formData.append('longitude', '72.8777');
+        formData.append('category', 'URGENT ONE-CLICK CITIZEN SOS');
+        formData.append('details', 'Instant 1-Click SOS distress signal transmitted from Citizen Portal.');
+
+        try {
+            const resp = await fetch('/public/sos/quick/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            btn.className = 'btn btn-success w-100 py-3 mb-2 fw-bold fs-5 shadow-lg d-flex align-items-center justify-content-center gap-2';
+            btn.innerHTML = `<i class="bi bi-check-circle-fill fs-3"></i> <span>SOS DISPATCHED! #${data.ticket_number || 'ACTIVE'}</span>`;
+            if (feedback) {
+                feedback.innerHTML = '<span class="text-success fw-bold">🚨 Live distress alert dispatched to Traffic Command Room! Redirecting...</span>';
+            }
+            setTimeout(() => {
+                window.location.href = "{% url 'public:sos_status' %}";
+            }, 1800);
+        } catch (e) {
+            btn.disabled = false;
+            btn.className = 'btn btn-danger w-100 py-3 mb-2 fw-bold fs-5 shadow-lg d-flex align-items-center justify-content-center gap-2';
+            btn.innerHTML = '<i class="bi bi-broadcast fs-3"></i> <span>RETRY 1-CLICK SOS</span>';
+            if (feedback) feedback.textContent = 'Transmission error. Please submit the form below directly.';
+        }
+    }
+</script>
+
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

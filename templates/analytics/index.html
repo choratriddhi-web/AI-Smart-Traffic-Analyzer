@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Traffic Analytics - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-pie-chart-fill text-purple"></i> Comprehensive Traffic Telemetry Analytics{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Category Breakdown Chart (Doughnut) -->
+    <div class="col-lg-5">
+        <div class="traffic-card glow-purple h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-pie-chart text-purple"></i> Vehicle Category Distribution</h5>
+                <small class="text-muted">Classification Split</small>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="chart-category-distribution"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Comparison Chart (Bar) -->
+    <div class="col-lg-7">
+        <div class="traffic-card glow-cyan h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-bar-chart-fill text-cyan"></i> Junction Vehicle Volume Comparison</h5>
+                <small class="text-muted">Total Crossings per Camera</small>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="chart-camera-comparison"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Density Trend Chart (Line) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-purple">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-graph-up text-purple"></i> Real-Time Density Timeline Trend</h5>
+                <span class="badge bg-secondary">Stored Telemetry</span>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="chart-density-trend"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lane Queue Breakdown Chart (Horizontal Bar) -->
+    <div class="col-lg-4">
+        <div class="traffic-card h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-distribute-vertical text-cyan"></i> Lane Distribution</h5>
+                <small class="text-muted">Vehicles In Lane</small>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="chart-lane-distribution"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/traffic_charts.js"></script>
+{% endblock %}

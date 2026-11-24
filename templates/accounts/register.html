@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Authority Officer - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-person-plus-fill text-purple"></i> Officer Registration{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pt-3">
+    <div class="col-md-8 col-lg-7">
+        <div class="traffic-card glow-purple p-4">
+            <!-- Gateway & Public Back Link -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{% url 'accounts:citizen_register' %}" class="text-cyan text-decoration-none small">
+                    <i class="bi bi-person-plus me-1"></i> Register as Public Citizen &rarr;
+                </a>
+                <span class="badge bg-danger">OFFICIAL ENROLLMENT</span>
+            </div>
+
+            <div class="text-center mb-4">
+                <div class="brand-icon mx-auto mb-2" style="width:56px; height:56px; font-size:26px; background:linear-gradient(135deg, #a855f7, #7c3aed);">
+                    <i class="bi bi-shield-shaded text-white"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-1">Traffic Authority Officer Registration</h4>
+                <p class="text-muted small">
+                    Create an official command account for CCTV surveillance, YOLO vehicle detection, and AI signal timing.
+                </p>
+            </div>
+
+            <form method="POST" action="{% url 'accounts:register' %}" id="reg-form">
+                {% csrf_token %}
+
+                <!-- Full Info Row 1: Username & Full Name -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Officer Username *</label>
+                        <input type="text" name="username" class="form-control form-control-custom" placeholder="e.g. inspector_kadam" required autofocus>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Full Name *</label>
+                        <input type="text" name="full_name" class="form-control form-control-custom" placeholder="e.g. Rajesh Kadam" required>
+                    </div>
+                </div>
+
+                <!-- Full Info Row 2: Official Email & Emergency Phone -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Official Police / Department Email *</label>
+                        <input type="email" name="email" class="form-control form-control-custom" placeholder="kadam@trafficpolice.gov.in" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Emergency Duty Phone *</label>
+                        <input type="tel" name="phone" class="form-control form-control-custom" placeholder="+91 98765 43210" required>
+                    </div>
+                </div>
+
+                <!-- Full Info Row 3: Department & Badge Number -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Department / Division *</label>
+                        <input type="text" name="department" class="form-control form-control-custom" placeholder="e.g. City Traffic Branch - Central Division" value="City Traffic Management Branch" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Officer Badge / ID Number *</label>
+                        <input type="text" name="badge_id" class="form-control form-control-custom" placeholder="e.g. TP-4092" required>
+                    </div>
+                </div>
+
+                <!-- Role Info Notice -->
+                <div class="p-3 rounded mb-3" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.25);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-purple fs-5"></i>
+                        <div>
+                            <span class="text-white fw-bold small">Assigned Role: Traffic Authority</span>
+                            <div class="text-muted small">Grants full surveillance access to simulated CCTV cameras, virtual counting lines, and signal controls.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Info Row 4: Password & Confirm Password -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Security Password *</label>
+                        <input type="password" name="password" class="form-control form-control-custom" placeholder="Min. 6 characters" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Confirm Password *</label>
+                        <input type="password" name="confirm_password" class="form-control form-control-custom" placeholder="Repeat password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-purple w-100 py-3 mb-3 fw-bold" id="reg-submit-btn">
+                    <i class="bi bi-person-check-fill me-1"></i> Register Officer Account & Proceed to Sign In
+                </button>
+
+                <div class="text-center pt-2 border-top border-secondary border-opacity-20">
+                    <span class="text-muted small">Already registered?</span>
+                    <a href="{% url 'accounts:login' %}" class="text-cyan text-decoration-none fw-bold small ms-1">
+                        Sign In to Authority Dashboard &rarr;
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

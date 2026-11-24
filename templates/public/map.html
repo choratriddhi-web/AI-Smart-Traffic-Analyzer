@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Google Live Traffic & Petrol Stations Map - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-geo-alt-fill text-purple"></i> Google Live Traffic & Verified Petrol Stations{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Main Interactive Google Map View (8 Cols) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-purple p-0 overflow-hidden">
+            <!-- Map Control Toolbar -->
+            <div class="p-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom border-secondary border-opacity-20" style="background:rgba(23,14,45,0.95);">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger"><i class="bi bi-google me-1"></i> Google Maps</span>
+                    <span class="text-white small fw-bold">Live Traffic Grid & Verified Fuel Stations</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-cyan btn-sm" id="btn-user-locate" onclick="findNearestFuelStation()">
+                        <i class="bi bi-crosshair2 me-1"></i> Find Nearest Petrol Pump
+                    </button>
+                    <button class="btn btn-outline-purple btn-sm" onclick="resetMapToCenter()">
+                        <i class="bi bi-arrows-fullscreen me-1"></i> Reset View
+                    </button>
+                </div>
+            </div>
+
+            <!-- Jump-To Location Pills Bar -->
+            <div class="p-2 border-bottom border-secondary border-opacity-10 d-flex flex-wrap gap-2" style="background:rgba(19,10,36,0.85);">
+                <span class="text-muted small align-self-center px-1">Jump to:</span>
+                <button class="btn btn-sm btn-outline-purple py-0 px-2 active" id="btn-pin-city" onclick="setGoogleMap(19.0760, 72.8777, 14, 'City Central Grid')">
+                    <i class="bi bi-buildings"></i> Central Grid
+                </button>
+                <button class="btn btn-sm btn-outline-purple py-0 px-2" onclick="setGoogleMap(19.0760, 72.8777, 16, 'CAM-01 Downtown')">
+                    <i class="bi bi-camera-video text-purple"></i> CAM-01 Downtown
+                </button>
+                <button class="btn btn-sm btn-outline-purple py-0 px-2" onclick="setGoogleMap(19.0825, 72.8850, 16, 'CAM-02 Hospital')">
+                    <i class="bi bi-hospital text-danger"></i> CAM-02 Hospital
+                </button>
+                <button class="btn btn-sm btn-outline-purple py-0 px-2" onclick="setGoogleMap(19.0890, 72.8680, 16, 'CAM-03 Roundabout')">
+                    <i class="bi bi-arrow-repeat text-cyan"></i> CAM-03 Roundabout
+                </button>
+                <button class="btn btn-sm btn-outline-purple py-0 px-2" onclick="setGoogleMap(19.0650, 72.8550, 16, 'CAM-04 Highway')">
+                    <i class="bi bi-speedometer text-warning"></i> CAM-04 Highway
+                </button>
+            </div>
+
+            <!-- Embedded Google Map Frame (Zero 404 tile errors) -->
+            <div class="position-relative" style="height: 520px; background:#000;">
+                <iframe id="google-maps-embed-frame"
+                        width="100%"
+                        height="100%"
+                        frameborder="0"
+                        style="border:0;"
+                        src="https://maps.google.com/maps?q=19.0760,72.8777&z=14&output=embed"
+                        allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Live Distance & Status Bar -->
+            <div class="p-3 bg-dark bg-opacity-75" id="fuel-nearest-result">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle text-cyan me-1"></i>
+                    Click <strong>'Find Nearest Petrol Pump'</strong> to share your GPS coordinates and calculate live driving distance to 24-hour stations.
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verified Fuel Stations & Camera Pins Directory (4 Cols) -->
+    <div class="col-lg-4">
+        <!-- Verified Petrol Pumps Card -->
+        <div class="traffic-card glow-cyan mb-4">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-fuel-pump-fill text-cyan"></i> 24-Hour Verified Petrol Pumps</h5>
+                <span class="badge bg-info text-dark">5 Stations</span>
+            </div>
+
+            <div class="d-flex flex-column gap-2" id="petrol-pumps-list" style="max-height: 480px; overflow-y: auto;">
+                {% for pump in petrol_pumps %}
+                <div class="p-3 rounded" style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.25);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong class="text-white small">{{ pump.name }}</strong>
+                        <span class="badge bg-dark text-cyan border border-info border-opacity-25" style="font-size:10px;">{{ pump.brand }}</span>
+                    </div>
+                    <small class="text-muted d-block my-1"><i class="bi bi-geo-alt text-purple"></i> {{ pump.address }}</small>
+                    <small class="text-success d-block mb-2"><i class="bi bi-check2-circle"></i> {{ pump.fuels|join:", " }} &bull; {{ pump.operating_hours }}</small>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-cyan py-0 px-2" style="font-size:11px;" onclick="setGoogleMap({{ pump.latitude }}, {{ pump.longitude }}, 17, '{{ pump.name }}')">
+                            <i class="bi bi-pin-map"></i> View on Map
+                        </button>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ pump.latitude }},{{ pump.longitude }}" target="_blank" class="btn btn-sm btn-cyan py-0 px-2" style="font-size:11px;">
+                            <i class="bi bi-compass"></i> Directions &rarr;
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Monitored CCTV Junctions Card -->
+        <div class="traffic-card">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-camera-video-fill text-purple"></i> CCTV Road Corridors (4)</h5>
+            </div>
+            <div class="d-flex flex-column gap-2">
+                {% for cam in cameras|slice:":4" %}
+                <div class="p-2 rounded d-flex align-items-center justify-content-between" style="background:rgba(168,85,247,0.06);">
+                    <div>
+                        <strong class="text-white small d-block">{{ cam.camera_id }}: {{ cam.name }}</strong>
+                        <small class="text-muted">{{ cam.location }}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-purple py-0 px-2" style="font-size:11px;" onclick="setGoogleMap({{ cam.latitude }}, {{ cam.longitude }}, 16, '{{ cam.camera_id }}')">
+                        <i class="bi bi-eye"></i> Map Pin
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const mapFrame = document.getElementById('google-maps-embed-frame');
+    const resultBox = document.getElementById('fuel-nearest-result');
+
+    function setGoogleMap(lat, lng, zoom, label) {
+        if (!mapFrame) return;
+        mapFrame.src = `https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
+        if (resultBox) {
+            resultBox.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <strong class="text-cyan"><i class="bi bi-pin-map-fill"></i> Centered on:</strong>
+                        <span class="text-white ms-1">${label} (${lat.toFixed(4)}, ${lng.toFixed(4)})</span>
+                    </div>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="btn btn-sm btn-cyan py-0 px-2" style="font-size:11px;">
+                        Open Directions in Google Maps &rarr;
+                    </a>
+                </div>
+            `;
+        }
+    }
+
+    function resetMapToCenter() {
+        setGoogleMap(19.0760, 72.8777, 14, 'City Central Grid');
+    }
+
+    function findNearestFuelStation() {
+        const btn = document.getElementById('btn-user-locate');
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Locating you...';
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-crosshair2 me-1"></i> GPS Located';
+
+                const uLat = pos.coords.latitude;
+                const uLng = pos.coords.longitude;
+
+                try {
+                    const resp = await fetch(`/api/petrol-pumps/?lat=${uLat}&lng=${uLng}`);
+                    const data = await resp.json();
+
+                    if (data.status === 'success' && data.petrol_pumps.length > 0) {
+                        const nearest = data.petrol_pumps[0];
+                        setGoogleMap(nearest.latitude, nearest.longitude, 16, nearest.name);
+
+                        resultBox.innerHTML = `
+                            <div class="alert alert-info py-2 px-3 mb-0" style="background:rgba(6,182,212,0.15); border-color:#06b6d4; color:#fff;">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <div>
+                                        <strong class="text-cyan"><i class="bi bi-fuel-pump-fill me-1"></i> Nearest Verified Fuel Station:</strong>
+                                        <span class="fw-bold">${nearest.name}</span>
+                                        <span class="badge bg-success ms-2">${nearest.distance_km} km away</span>
+                                        <small class="d-block text-muted mt-1">${nearest.address} &bull; ${nearest.operating_hours}</small>
+                                    </div>
+                                    <div>
+                                        <a href="https://www.google.com/maps/dir/?api=1&origin=${uLat},${uLng}&destination=${nearest.latitude},${nearest.longitude}" target="_blank" class="btn btn-sm btn-cyan">
+                                            <i class="bi bi-compass-fill me-1"></i> Start Navigation in Google Maps
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch(err) {
+                    console.error('Failed to query fuel stations:', err);
+                }
+            },
+            (err) => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-crosshair2 me-1"></i> Find Nearest Petrol Pump';
+                alert('Geolocation permission was declined or timed out. Defaulting to Central Grid coordinates.');
+                resetMapToCenter();
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+    }
+</script>
+{% endblock %}

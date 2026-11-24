@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Signal Optimization - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-stoplights-fill text-purple"></i> Adaptive AI Signal Optimization{% endblock %}
+
+{% block content %}
+<!-- Academic & Demonstration Disclaimer Banner -->
+<div class="alert alert-warning py-2 px-3 mb-4 d-flex align-items-center gap-2" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fff;">
+    <i class="bi bi-shield-exclamation text-warning fs-4"></i>
+    <div>
+        <strong>ACADEMIC DEMONSTRATION NOTICE:</strong>
+        {{ recommendation.simulated_label }}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Simulated Traffic Light Visualizer & Timing Box -->
+    <div class="col-lg-4">
+        <div class="traffic-card glow-purple text-center h-100">
+            <div class="card-header-custom justify-content-center">
+                <h5 class="card-title-custom"><i class="bi bi-lightbulb-fill text-purple"></i> Simulated Signal Controller</h5>
+            </div>
+
+            <!-- 3-Bulb Simulated Traffic Light Head -->
+            <div class="traffic-signal-box mx-auto my-3">
+                <div class="signal-bulb red" id="signal-red"></div>
+                <div class="signal-bulb yellow" id="signal-yellow"></div>
+                <div class="signal-bulb green active" id="signal-green"></div>
+            </div>
+
+            <!-- Signal Phase & Countdown Timer -->
+            <div class="mt-3">
+                <h2 class="display-4 fw-bold text-white mb-0" id="signal-countdown">{{ recommendation.green_duration }}s</h2>
+                <span class="badge bg-success fs-6 mt-1" id="signal-state-badge">GREEN PHASE ACTIVE</span>
+                <p class="text-muted small mt-2">Dynamic Green Allocated: <strong>{{ recommendation.green_duration }} sec</strong></p>
+                <p class="text-muted small">Yellow Transition: <strong>{{ recommendation.yellow_duration }} sec</strong></p>
+            </div>
+
+            <div class="p-2 rounded mt-3 text-start" style="background:rgba(168,85,247,0.08); font-size:12px;">
+                <span class="text-cyan fw-bold d-block"><i class="bi bi-check-circle"></i> Optimization Rationale:</span>
+                <span class="text-muted">Calculated using queue saturation rate, vehicle accumulation density, and cross-street waiting delay mitigation.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telemetry Inputs & AI Recommendation Explanation (8 Cols) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-cyan h-100">
+            <div class="card-header-custom">
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="card-title-custom"><i class="bi bi-cpu-fill text-cyan"></i> Real-Time Telemetry Inputs & Optimization Formula</h5>
+                    <form method="GET" class="d-flex align-items-center gap-2">
+                        <select name="camera_id" class="form-select form-select-custom py-1 px-2" style="font-size:12px;" onchange="this.form.submit()">
+                            {% for c in cameras %}
+                            <option value="{{ c }}" {% if c == selected_camera %}selected{% endif %}>{{ c }} Junction</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <span class="badge bg-purple">{{ recommendation.recommended_state }}</span>
+            </div>
+
+            <!-- 4 Input Variables Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded text-center" style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3);">
+                        <small class="text-muted d-block" style="font-size:11px;">ACTIVE VEHICLES</small>
+                        <h4 class="fw-bold text-white mb-0">{{ recommendation.inputs.vehicle_count }}</h4>
+                        <small class="text-cyan">In camera FOV</small>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded text-center" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.3);">
+                        <small class="text-muted d-block" style="font-size:11px;">LANE QUEUE LENGTH</small>
+                        <h4 class="fw-bold text-white mb-0">{{ recommendation.inputs.queue_length }}</h4>
+                        <small class="text-magenta">Stacked vehicles</small>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded text-center" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3);">
+                        <small class="text-muted d-block" style="font-size:11px;">TRAFFIC DENSITY</small>
+                        <h4 class="fw-bold text-cyan mb-0">{{ recommendation.inputs.density_category }}</h4>
+                        <small class="text-muted">Calculated Level</small>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded text-center" style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3);">
+                        <small class="text-muted d-block" style="font-size:11px;">AVG WAITING TIME</small>
+                        <h4 class="fw-bold text-warning mb-0">{{ recommendation.inputs.waiting_time_sec }}s</h4>
+                        <small class="text-muted">Approach delay</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plain English Explanation -->
+            <div class="p-4 rounded mb-4" style="background:rgba(23,14,45,0.85); border:1px solid rgba(168,85,247,0.3);">
+                <h6 class="text-purple fw-bold mb-2"><i class="bi bi-chat-left-quote-fill me-2"></i> Recommendation Explanation:</h6>
+                <p class="text-white mb-0 fs-6 lh-base">{{ recommendation.explanation }}</p>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small"><i class="bi bi-clock"></i> Generated: {{ recommendation.timestamp }}</span>
+                <a href="{% url 'signals:qlearning' %}" class="btn btn-purple">
+                    <i class="bi bi-diagram-3 me-1"></i> Open Q-Learning Reinforcement Learning Model &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Simulated dynamic countdown loop
+    let greenDuration = {{ recommendation.green_duration }};
+    let yellowDuration = {{ recommendation.yellow_duration }};
+    let redDuration = 20;
+
+    let currentPhase = 'green';
+    let timeLeft = greenDuration;
+
+    const redBulb = document.getElementById('signal-red');
+    const yellowBulb = document.getElementById('signal-yellow');
+    const greenBulb = document.getElementById('signal-green');
+    const countdownElem = document.getElementById('signal-countdown');
+    const badgeElem = document.getElementById('signal-state-badge');
+
+    function updateBulbs() {
+        redBulb.classList.toggle('active', currentPhase === 'red');
+        yellowBulb.classList.toggle('active', currentPhase === 'yellow');
+        greenBulb.classList.toggle('active', currentPhase === 'green');
+
+        if (currentPhase === 'green') {
+            badgeElem.textContent = 'GREEN PHASE ACTIVE';
+            badgeElem.className = 'badge bg-success fs-6 mt-1';
+        } else if (currentPhase === 'yellow') {
+            badgeElem.textContent = 'YELLOW TRANSITION';
+            badgeElem.className = 'badge bg-warning text-dark fs-6 mt-1';
+        } else {
+            badgeElem.textContent = 'RED PHASE STOP';
+            badgeElem.className = 'badge bg-danger fs-6 mt-1';
+        }
+    }
+
+    setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            if (currentPhase === 'green') {
+                currentPhase = 'yellow';
+                timeLeft = yellowDuration;
+            } else if (currentPhase === 'yellow') {
+                currentPhase = 'red';
+                timeLeft = redDuration;
+            } else {
+                currentPhase = 'green';
+                timeLeft = greenDuration;
+            }
+            updateBulbs();
+        }
+        countdownElem.textContent = `${timeLeft}s`;
+    }, 1000);
+</script>
+{% endblock %}

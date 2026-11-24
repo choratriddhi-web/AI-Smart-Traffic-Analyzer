@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Accident Monitoring - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-exclamation-octagon-fill text-purple"></i> Incident & Accident Response Center{% endblock %}
+
+{% block content %}
+<!-- Academic Disclaimer Notice -->
+<div class="alert alert-warning py-2 px-3 mb-4 d-flex align-items-center gap-2" style="background:rgba(245,158,11,0.12); border:1px solid #f59e0b; color:#fff;">
+    <i class="bi bi-shield-exclamation text-warning fs-4"></i>
+    <div>
+        <strong>ACADEMIC DEMONSTRATION NOTICE:</strong>
+        Ordinary YOLO bounding boxes do not constitute real certified accident classification.
+        All incident records displayed below are simulated alerts for demonstration and workflow validation.
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Active Incidents Overview (8 Cols) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-purple h-100">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-bell-fill text-purple"></i> Logged Incident Alerts</h5>
+                <span class="badge bg-danger">{{ active_count }} Active Cases</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Incident ID</th>
+                            <th>Sector</th>
+                            <th>Category</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Workflow Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inc in incidents %}
+                        <tr>
+                            <td>
+                                <strong class="text-white">{{ inc.incident_id }}</strong>
+                                <small class="text-dim d-block">{{ inc.detection_method }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-purple">{{ inc.camera_id }}</span>
+                                <small class="text-muted d-block">{{ inc.location }}</small>
+                            </td>
+                            <td class="text-white">{{ inc.category }}</td>
+                            <td><small class="text-muted">{{ inc.timestamp|date:"M d, H:i" }}</small></td>
+                            <td>
+                                {% if inc.status == 'Active' %}
+                                <span class="badge bg-danger animate-pulse">Active Alert</span>
+                                {% elif inc.status == 'Acknowledged' %}
+                                <span class="badge bg-warning text-dark">Acknowledged</span>
+                                {% else %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if inc.status == 'Active' %}
+                                <a href="{% url 'incidents:acknowledge' inc.id %}" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:12px;">
+                                    <i class="bi bi-check2"></i> Acknowledge
+                                </a>
+                                {% elif inc.status == 'Acknowledged' %}
+                                <form method="POST" action="{% url 'incidents:resolve' inc.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="notes" value="Cleared by Traffic Control Unit.">
+                                    <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:12px;">
+                                        <i class="bi bi-check-all"></i> Mark Resolved
+                                    </button>
+                                </form>
+                                {% else %}
+                                <small class="text-success"><i class="bi bi-shield-check"></i> Resolved</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No incidents currently recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Test Incident Simulator (4 Cols) -->
+    <div class="col-lg-4">
+        <div class="traffic-card glow-cyan">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-plus-square-fill text-cyan"></i> Generate Demonstration Alert</h5>
+            </div>
+            <p class="text-muted small">Inject a simulated traffic stoppage or collision alert to evaluate dispatch response.</p>
+
+            <form method="POST" action="{% url 'incidents:generate' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label text-white small fw-bold">Select Camera Junction</label>
+                    <select name="camera_id" class="form-select form-select-custom" required>
+                        <option value="CAM-01">CAM-01 - Downtown Intersection</option>
+                        <option value="CAM-02">CAM-02 - Hospital Corridor</option>
+                        <option value="CAM-03">CAM-03 - North Ring Roundabout</option>
+                        <option value="CAM-04" selected>CAM-04 - Metro Highway Junction</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white small fw-bold">Incident Category</label>
+                    <select name="category" class="form-select form-select-custom" required>
+                        <option value="Vehicle Collision / Stoppage">Vehicle Collision / Stoppage</option>
+                        <option value="Multi-Vehicle Pileup">Multi-Vehicle Pileup</option>
+                        <option value="Overturned Commercial Vehicle">Overturned Commercial Vehicle</option>
+                        <option value="Sudden Lane Obstruction">Sudden Lane Obstruction</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white small fw-bold">Exact Location Marker</label>
+                    <input type="text" name="location" class="form-control form-control-custom" value="Highway Flyover Pier 14 Southbound" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white small fw-bold">Incident Description</label>
+                    <textarea name="description" class="form-control form-control-custom" rows="3" required>Simulated vehicle collision in lane 2. Standstill vehicles detected.</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-purple w-100 py-2">
+                    <i class="bi bi-broadcast me-1"></i> Trigger Simulated Incident Alert
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

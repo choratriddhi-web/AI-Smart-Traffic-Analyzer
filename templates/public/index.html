@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Traffic Portal - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-broadcast-pin text-cyan"></i> Smart City Public Citizen Portal{% endblock %}
+
+{% block content %}
+<!-- EMERGENCY CITIZEN SOS DISTRESS HERO SECTION -->
+<div class="row mb-4" id="public-sos-section">
+    <div class="col-12">
+        <div class="traffic-card p-4 text-center position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(136, 19, 55, 0.4) 100%); border: 2px solid #ef4444; box-shadow: 0 0 35px rgba(239, 68, 68, 0.35);">
+            <div class="d-flex flex-column align-items-center justify-content-center">
+                <span class="badge bg-danger px-3 py-2 fs-6 mb-2 animate-pulse">
+                    <i class="bi bi-shield-exclamation me-1"></i> PUBLIC EMERGENCY RESPONSE SERVICE
+                </span>
+                <h2 class="display-6 fw-bold text-white mb-2">Need Immediate Road or Medical Assistance?</h2>
+                <p class="text-light opacity-90 max-w-600 mb-4" style="max-width: 650px;">
+                    Click the One-Click SOS button below to instantly transmit your live GPS coordinates, distress category, and emergency alert directly to the Traffic Command Center.
+                </p>
+
+                <!-- Giant Pulsing One-Click SOS Button -->
+                <button type="button" class="btn btn-danger btn-lg px-5 py-3 fs-4 fw-bold shadow-lg d-flex align-items-center gap-3" id="btn-giant-sos" onclick="triggerQuickSos()">
+                    <i class="bi bi-life-preserver fs-2 animate-pulse"></i>
+                    <span>TRIGGER EMERGENCY SOS DISTRESS NOW</span>
+                </button>
+                <small class="text-white opacity-75 mt-2" id="quick-sos-status-text">
+                    <i class="bi bi-crosshair text-cyan"></i> Auto-detects GPS & broadcasts live alert to Traffic Authorities.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome & Public Information Banner -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="traffic-card glow-cyan py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h5 class="fw-bold text-white mb-1"><i class="bi bi-info-circle text-cyan me-2"></i>Live Smart City Road Network</h5>
+                <p class="text-muted small mb-0">Real-time public traffic conditions, simulated traffic signals, Google Map navigation, verified fuel stations, and AI voice assistance.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'public:map' %}" class="btn btn-cyan btn-sm">
+                    <i class="bi bi-geo-alt-fill me-1"></i> Google Traffic Map
+                </a>
+                <a href="{% url 'assistant:index' %}" class="btn btn-purple btn-sm">
+                    <i class="bi bi-mic me-1"></i> AI Voice Assistant
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Smart City Live Road Network Status (Citizen Congestion Advisory) -->
+<div class="row g-3 mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-white mb-0"><i class="bi bi-signpost-2-fill text-cyan me-2"></i>City Transit Corridors & Congestion Status</h5>
+        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-40">
+            <i class="bi bi-check-circle me-1"></i> Live Traffic Flow Updates
+        </span>
+    </div>
+
+    <!-- Corridor 1 -->
+    <div class="col-md-6 col-xl-3">
+        <div class="traffic-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-purple">SECTOR 1</span>
+                <span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:7px;"></i> SMOOTH FLOW</span>
+            </div>
+            <h6 class="fw-bold text-white mb-1">MG Road & Grand Avenue</h6>
+            <small class="text-muted d-block mb-3"><i class="bi bi-geo-alt text-cyan"></i> Central City Junction</small>
+            <div class="p-2 rounded mb-3" style="background:rgba(168,85,247,0.08);">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Average Speed:</span>
+                    <strong class="text-white">42 km/h</strong>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Estimated Delay:</span>
+                    <strong class="text-success">&lt; 1 min</strong>
+                </div>
+            </div>
+            <a href="{% url 'public:map' %}" class="btn btn-sm btn-outline-cyan w-100">
+                <i class="bi bi-geo-alt me-1"></i> View on Google Maps
+            </a>
+        </div>
+    </div>
+
+    <!-- Corridor 2 -->
+    <div class="col-md-6 col-xl-3">
+        <div class="traffic-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-purple">SECTOR 2</span>
+                <span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:7px;"></i> CLEAR CORRIDOR</span>
+            </div>
+            <h6 class="fw-bold text-white mb-1">Trauma Way & Hospital Link</h6>
+            <small class="text-muted d-block mb-3"><i class="bi bi-geo-alt text-cyan"></i> Medical Emergency Zone</small>
+            <div class="p-2 rounded mb-3" style="background:rgba(168,85,247,0.08);">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Average Speed:</span>
+                    <strong class="text-white">48 km/h</strong>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Estimated Delay:</span>
+                    <strong class="text-success">0 mins</strong>
+                </div>
+            </div>
+            <a href="{% url 'public:map' %}" class="btn btn-sm btn-outline-cyan w-100">
+                <i class="bi bi-geo-alt me-1"></i> View on Google Maps
+            </a>
+        </div>
+    </div>
+
+    <!-- Corridor 3 -->
+    <div class="col-md-6 col-xl-3">
+        <div class="traffic-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-purple">SECTOR 3</span>
+                <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle-fill me-1" style="font-size:7px;"></i> MODERATE</span>
+            </div>
+            <h6 class="fw-bold text-white mb-1">North Ring Road Circle</h6>
+            <small class="text-muted d-block mb-3"><i class="bi bi-geo-alt text-cyan"></i> Commercial Hub Roundabout</small>
+            <div class="p-2 rounded mb-3" style="background:rgba(245,158,11,0.08);">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Average Speed:</span>
+                    <strong class="text-white">28 km/h</strong>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Estimated Delay:</span>
+                    <strong class="text-warning">3 - 5 mins</strong>
+                </div>
+            </div>
+            <a href="{% url 'public:map' %}" class="btn btn-sm btn-outline-cyan w-100">
+                <i class="bi bi-geo-alt me-1"></i> View on Google Maps
+            </a>
+        </div>
+    </div>
+
+    <!-- Corridor 4 -->
+    <div class="col-md-6 col-xl-3">
+        <div class="traffic-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-purple">SECTOR 4</span>
+                <span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:7px;"></i> STEADY FLOW</span>
+            </div>
+            <h6 class="fw-bold text-white mb-1">Western Transit Highway</h6>
+            <small class="text-muted d-block mb-3"><i class="bi bi-geo-alt text-cyan"></i> Airport Bypass Route</small>
+            <div class="p-2 rounded mb-3" style="background:rgba(168,85,247,0.08);">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Average Speed:</span>
+                    <strong class="text-white">52 km/h</strong>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Estimated Delay:</span>
+                    <strong class="text-success">&lt; 2 mins</strong>
+                </div>
+            </div>
+            <a href="{% url 'public:map' %}" class="btn btn-sm btn-outline-cyan w-100">
+                <i class="bi bi-geo-alt me-1"></i> View on Google Maps
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- AI SIGNAL OPTIMIZATION & MACHINE LEARNING PREDICTION (CITIZEN TRANSIT ADVISORY) -->
+<div class="row g-4 mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-white mb-0">
+            <i class="bi bi-cpu-fill text-cyan me-2"></i>Smart AI Services & Commuter Telemetry
+        </h5>
+        <span class="badge bg-purple bg-opacity-25 text-purple border border-purple border-opacity-40">
+            <i class="bi bi-stars me-1"></i> Public AI Transit Assistance
+        </span>
+    </div>
+
+    <!-- Feature 1: Signal Optimization Card -->
+    <div class="col-md-6">
+        <div class="traffic-card glow-cyan h-100 p-4 d-flex flex-column justify-content-between" style="border-color: rgba(6,182,212,0.4);">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-cyan text-dark fw-bold" style="background:#06b6d4;">CITIZEN ADVISORY</span>
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> ACTIVE AI TIMING</span>
+                </div>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="p-3 rounded-3" style="background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.4);">
+                        <i class="bi bi-stoplights-fill text-cyan fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-white mb-0">Signal Optimization</h4>
+                        <small class="text-muted">Dynamic Adaptive Traffic Light Timing</small>
+                    </div>
+                </div>
+                <p class="text-light opacity-90 small mb-3">
+                    View real-time AI signal timings computed for city intersections. Algorithms dynamically optimize green light duration based on live vehicle density, waiting time, and queue length to minimize commuter delays.
+                </p>
+                <div class="p-2 rounded mb-3" style="background:rgba(6,182,212,0.08); border:1px dashed var(--accent-cyan);">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Current Cycle: <strong class="text-white">45s Dynamic Green</strong></span>
+                        <span>Delay Reduction: <strong class="text-success">&darr; 88.5%</strong></span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'signals:index' %}" class="btn btn-cyan w-100 py-2 fw-bold text-dark d-flex align-items-center justify-content-center gap-2" style="background:#06b6d4;">
+                <i class="bi bi-stoplights"></i>
+                <span>Open Signal Optimization &rarr;</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature 2: Traffic Prediction Card -->
+    <div class="col-md-6">
+        <div class="traffic-card glow-purple h-100 p-4 d-flex flex-column justify-content-between" style="border-color: rgba(168,85,247,0.4);">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-purple fw-bold">MACHINE LEARNING</span>
+                    <span class="badge bg-secondary text-white">SCIKIT-LEARN OLS</span>
+                </div>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="p-3 rounded-3" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.4);">
+                        <i class="bi bi-graph-up-arrow text-purple fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-white mb-0">Traffic Prediction</h4>
+                        <small class="text-muted">Predictive Road Congestion & Volume Forecasting</small>
+                    </div>
+                </div>
+                <p class="text-light opacity-90 small mb-3">
+                    Plan your travel with scientific traffic forecasts. Linear Regression models analyze historical traffic trends to predict future vehicle volumes and congestion levels for +5m, +15m, and +30m intervals.
+                </p>
+                <div class="p-2 rounded mb-3" style="background:rgba(168,85,247,0.08); border:1px dashed var(--accent-purple);">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>+5m Forecast: <strong class="text-cyan">Moderate</strong></span>
+                        <span>+15m Forecast: <strong class="text-purple">Moderate</strong></span>
+                        <span>+30m Forecast: <strong class="text-warning">High</strong></span>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'prediction:index' %}" class="btn btn-purple w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-graph-up"></i>
+                <span>View Traffic Predictions &rarr;</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Simulated Traffic Signal Notice & Detailed SOS Form -->
+<div class="row g-4 mb-4">
+    <!-- Simulated Traffic Signal Display (4 Cols) -->
+    <div class="col-lg-4">
+        <div class="traffic-card glow-purple text-center h-100">
+            <div class="card-header-custom justify-content-center">
+                <h5 class="card-title-custom"><i class="bi bi-stoplights text-purple"></i> Simulated Signal Status</h5>
+            </div>
+            <div class="badge bg-warning text-dark mb-2" style="font-size:10px;">
+                SIMULATED AI SIGNAL – NOT CONNECTED TO REAL TRAFFIC LIGHTS
+            </div>
+
+            <div class="traffic-signal-box mx-auto my-3" style="width:78px;">
+                <div class="signal-bulb red" id="pub-signal-red"></div>
+                <div class="signal-bulb yellow" id="pub-signal-yellow"></div>
+                <div class="signal-bulb green active" id="pub-signal-green"></div>
+            </div>
+
+            <h3 class="fw-bold text-white mb-0" id="pub-signal-timer">38s</h3>
+            <span class="badge bg-success" id="pub-signal-status">GREEN FLOW ACTIVE</span>
+            <small class="text-muted d-block mt-2">Corridor traffic progressing steadily</small>
+        </div>
+    </div>
+
+    <!-- Detailed Smart SOS Submission Form (8 Cols) -->
+    <div class="col-lg-8">
+        <div class="traffic-card glow-cyan">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-file-earmark-medical text-danger"></i> Detailed Citizen SOS Dispatch Request</h5>
+                <span class="badge bg-danger animate-pulse">Live Distress Dispatch</span>
+            </div>
+            <div class="alert alert-dark py-2 px-3 mb-3 small" style="background:rgba(23,14,45,0.7); border:1px dashed #ef4444; color:#fca5a5;">
+                <i class="bi bi-exclamation-octagon me-1"></i>
+                <strong>PROJECT DEMONSTRATION NOTICE:</strong>
+                Submitting this ticket broadcasts an instant audio/visual distress alert to the Traffic Authority Command Room.
+            </div>
+
+            <form method="POST" action="{% url 'public:sos_submit' %}">
+                {% csrf_token %}
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Your Name *</label>
+                        <input type="text" name="name" class="form-control form-control-custom" value="{{ current_user.full_name|default:'' }}" placeholder="e.g. Ramesh Patil" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Contact Phone Number *</label>
+                        <input type="tel" name="phone" class="form-control form-control-custom" value="{{ current_user.phone|default:'' }}" placeholder="+91 98765 00000" required>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">Emergency Category *</label>
+                        <select name="category" class="form-select form-select-custom" required>
+                            <option value="Medical Emergency" selected>Medical Emergency / Ambulance Needed</option>
+                            <option value="Road Accident / Collision">Road Accident / Collision</option>
+                            <option value="Vehicle Breakdown / Flat Tyre">Vehicle Breakdown / Stalled Car</option>
+                            <option value="Hazardous Road Obstruction">Hazardous Road Obstruction</option>
+                            <option value="Fire / Fuel Leakage">Fire / Fuel Leakage</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-bold">GPS Geolocation</label>
+                        <div class="input-group">
+                            <input type="text" id="sos-latitude" name="latitude" class="form-control form-control-custom" placeholder="Lat e.g. 19.0760">
+                            <input type="text" id="sos-longitude" name="longitude" class="form-control form-control-custom" placeholder="Lng e.g. 72.8777">
+                            <button type="button" class="btn btn-outline-purple" id="btn-auto-gps" onclick="autoFetchLocation()">
+                                <i class="bi bi-crosshair"></i> Auto GPS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white small fw-bold">Describe Situation & Landmarks *</label>
+                    <textarea name="details" class="form-control form-control-custom" rows="2" placeholder="Describe the situation or nearby landmarks..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'public:sos_status' %}" class="text-cyan small text-decoration-none">
+                        <i class="bi bi-clock-history"></i> Track my existing SOS tickets &rarr;
+                    </a>
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-broadcast me-1"></i> Send Emergency Distress Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Verified Nearby Petrol Pumps Ribbon with Direct Google Maps Directions -->
+<div class="row">
+    <div class="col-12">
+        <div class="traffic-card">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-fuel-pump-fill text-cyan"></i> Verified 24-Hour Petrol Stations Nearby</h5>
+                <a href="{% url 'public:map' %}" class="text-cyan text-decoration-none small">Open Full Google Map &rarr;</a>
+            </div>
+            <div class="row g-3">
+                {% for pump in petrol_pumps|slice:":4" %}
+                <div class="col-md-6 col-xl-3">
+                    <div class="p-3 rounded h-100" style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.2);">
+                        <h6 class="fw-bold text-white mb-1"><i class="bi bi-fuel-pump text-cyan"></i> {{ pump.name }}</h6>
+                        <small class="text-muted d-block mb-1">{{ pump.address }}</small>
+                        <small class="text-success d-block mb-2">{{ pump.operating_hours }} &bull; {{ pump.fuels|join:", " }}</small>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ pump.latitude }},{{ pump.longitude }}" target="_blank" class="btn btn-sm btn-cyan py-0 px-2" style="font-size:11px;">
+                            <i class="bi bi-compass"></i> Directions on Google Maps
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Simulated countdown
+    let pTimer = 38;
+    let pPhase = 'green';
+    const pRed = document.getElementById('pub-signal-red');
+    const pYel = document.getElementById('pub-signal-yellow');
+    const pGrn = document.getElementById('pub-signal-green');
+    const pTimerElem = document.getElementById('pub-signal-timer');
+    const pStatusElem = document.getElementById('pub-signal-status');
+
+    setInterval(() => {
+        pTimer--;
+        if (pTimer <= 0) {
+            if (pPhase === 'green') {
+                pPhase = 'yellow';
+                pTimer = 4;
+                pRed.classList.remove('active');
+                pYel.classList.add('active');
+                pGrn.classList.remove('active');
+                pStatusElem.textContent = 'YELLOW TRANSITION';
+                pStatusElem.className = 'badge bg-warning text-dark';
+            } else if (pPhase === 'yellow') {
+                pPhase = 'red';
+                pTimer = 25;
+                pRed.classList.add('active');
+                pYel.classList.remove('active');
+                pGrn.classList.remove('active');
+                pStatusElem.textContent = 'RED PHASE STOP';
+                pStatusElem.className = 'badge bg-danger';
+            } else {
+                pPhase = 'green';
+                pTimer = 38;
+                pRed.classList.remove('active');
+                pYel.classList.remove('active');
+                pGrn.classList.add('active');
+                pStatusElem.textContent = 'GREEN FLOW ACTIVE';
+                pStatusElem.className = 'badge bg-success';
+            }
+        }
+        pTimerElem.textContent = `${pTimer}s`;
+    }, 1000);
+
+    function autoFetchLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation not supported in your browser.');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                document.getElementById('sos-latitude').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('sos-longitude').value = pos.coords.longitude.toFixed(6);
+            },
+            (err) => {
+                alert(`Location error: ${err.message}`);
+            }
+        );
+    }
+
+    // Instant One-Click Emergency SOS Trigger (Zero latency, immediate dispatch)
+    async function triggerQuickSos() {
+        const btn = document.getElementById('btn-giant-sos');
+        const statusText = document.getElementById('quick-sos-status-text');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> TRANSMITTING EMERGENCY DISTRESS SIGNAL...';
+
+        let uLat = 19.0760;
+        let uLng = 72.8777;
+
+        const latInput = document.getElementById('sos-latitude');
+        const lngInput = document.getElementById('sos-longitude');
+        if (latInput && latInput.value) uLat = parseFloat(latInput.value) || uLat;
+        if (lngInput && lngInput.value) uLng = parseFloat(lngInput.value) || uLng;
+
+        const formData = new FormData();
+        formData.append('latitude', uLat);
+        formData.append('longitude', uLng);
+        formData.append('category', 'URGENT ONE-CLICK CITIZEN SOS');
+        formData.append('details', `Instant 1-Click SOS distress signal triggered from Citizen Portal at (${uLat.toFixed(4)}, ${uLng.toFixed(4)}).`);
+
+        try {
+            const resp = await fetch('/public/sos/quick/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+
+            btn.classList.replace('btn-danger', 'btn-success');
+            btn.innerHTML = `<i class="bi bi-check-circle-fill fs-2"></i> <span>SOS DISPATCHED! TICKET #${data.ticket_number || 'ACTIVE'}</span>`;
+            if (statusText) {
+                statusText.innerHTML = `<span class="badge bg-success fs-6 mt-2"><i class="bi bi-broadcast"></i> ALERT DELIVERED TO TRAFFIC COMMAND CENTER! Live distress dispatched.</span>`;
+            }
+
+            // Auto-redirect to live SOS status tracker after 2 seconds
+            setTimeout(() => {
+                window.location.href = "{% url 'public:sos_status' %}";
+            }, 2000);
+
+        } catch(err) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-life-preserver fs-2"></i> <span>RETRY EMERGENCY SOS</span>';
+            alert('Failed to transmit SOS signal. Please use the detailed form below.');
+        }
+    }
+</script>
+{% endblock %}

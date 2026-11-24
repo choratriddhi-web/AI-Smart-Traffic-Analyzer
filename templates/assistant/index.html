@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Traffic Assistant - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-mic-fill text-purple"></i> AI Traffic Chat & Voice Assistant{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+        <div class="traffic-card glow-purple p-0 overflow-hidden">
+            <!-- Header bar with Voice Indicator -->
+            <div class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-20" style="background:rgba(23,14,45,0.9);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-icon" style="width:42px; height:42px;">
+                        <i class="bi bi-robot text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white fw-bold mb-0">AI Traffic Voice & Chat Agent</h6>
+                        <small class="text-cyan" id="mic-status-indicator">Click Speak or type your question below.</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-purple btn-sm" id="btn-mic-toggle">
+                        <i class="bi bi-mic-fill"></i> Speak
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Message Bubbles History -->
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-bubble bot">
+                    <i class="bi bi-robot text-purple me-1"></i>
+                    <span>
+                        Hello! I am your <strong>AI Smart Traffic Assistant</strong>. I have direct real-time access to live CCTV telemetry, vehicle detectors, accident alerts, and adaptive signals.
+                        <br><br>
+                        Click <strong>Speak</strong> or ask me any question about the traffic conditions!
+                    </span>
+                </div>
+            </div>
+
+            <!-- Quick Suggestion Buttons -->
+            <div class="p-3 border-top border-secondary border-opacity-10" style="background:rgba(19,10,36,0.6);">
+                <small class="text-muted d-block mb-2"><i class="bi bi-stars text-cyan"></i> Suggested Queries:</small>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('What is the current traffic density?')">
+                        Traffic density?
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('How many vehicles are detected?')">
+                        Total vehicles count?
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('Which camera has maximum traffic?')">
+                        Busiest camera sector?
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('Which lane has the most vehicles?')">
+                        Lane queue status?
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('Are there any accident alerts?')">
+                        Accident alerts?
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('Is an emergency vehicle detected?')">
+                        Emergency corridor?
+                    </button>
+                    <button class="btn btn-sm btn-outline-purple py-1 px-2" style="font-size:12px;" onclick="askPreset('What is the recommended signal duration?')">
+                        Recommended signal timing?
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input Form Box -->
+            <div class="p-3 bg-dark bg-opacity-75 border-top border-secondary border-opacity-20">
+                <div class="input-group">
+                    <input type="text"
+                           id="chat-input-field"
+                           class="form-control form-control-custom"
+                           placeholder="Type a traffic question or click Speak...">
+                    <button class="btn btn-cyan px-4" id="btn-chat-send">
+                        <i class="bi bi-send-fill me-1"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/voice_assistant.js"></script>
+<script>
+    function askPreset(question) {
+        if (window.aiVoiceAssistant) {
+            window.aiVoiceAssistant.appendMessage('user', question);
+            window.aiVoiceAssistant.queryBackend(question);
+        }
+    }
+</script>
+{% endblock %}

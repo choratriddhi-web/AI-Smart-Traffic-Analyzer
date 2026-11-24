@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}SOS Dispatch Inbox - AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-shield-exclamation text-danger"></i> Emergency SOS Dispatch Inbox{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="traffic-card glow-purple">
+            <div class="card-header-custom">
+                <h5 class="card-title-custom"><i class="bi bi-inbox-fill text-danger"></i> Public SOS Distress Signals</h5>
+                <span class="badge bg-danger">{{ requests|length }} Total Distress Tickets</span>
+            </div>
+
+            <div class="alert alert-dark py-2 px-3 mb-3 small" style="background:rgba(23,14,45,0.7); border:1px dashed #ef4444; color:#fca5a5;">
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>AUTHORITY NOTICE:</strong>
+                PROJECT DEMONSTRATION – SOS DOES NOT CONTACT REAL EMERGENCY SERVICES.
+                Use this control board to acknowledge and dispatch rapid emergency units across the traffic grid.
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Citizen</th>
+                            <th>Category</th>
+                            <th>Details & Address</th>
+                            <th>GPS Coordinates</th>
+                            <th>Status</th>
+                            <th>Dispatch Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in requests %}
+                        <tr>
+                            <td><strong class="text-white">{{ r.ticket_number }}</strong></td>
+                            <td>
+                                <div class="fw-bold text-white">{{ r.user_name }}</div>
+                                <small class="text-cyan"><i class="bi bi-telephone"></i> {{ r.contact_phone }}</small>
+                            </td>
+                            <td><span class="badge bg-purple">{{ r.emergency_category }}</span></td>
+                            <td style="max-width:280px;">
+                                <div class="text-white small mb-1">{{ r.details }}</div>
+                                <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ r.address }}</small>
+                            </td>
+                            <td>
+                                <a href="https://www.google.com/maps?q={{ r.latitude }},{{ r.longitude }}" target="_blank" class="text-cyan small text-decoration-none">
+                                    <i class="bi bi-pin-map-fill"></i> {{ r.latitude|floatformat:4 }}, {{ r.longitude|floatformat:4 }} &rarr;
+                                </a>
+                            </td>
+                            <td>
+                                {% if r.status == 'Pending' %}
+                                <span class="badge bg-danger animate-pulse">Pending</span>
+                                {% elif r.status == 'Acknowledged' %}
+                                <span class="badge bg-warning text-dark">Acknowledged</span>
+                                {% else %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="{% url 'sos:update' r.id %}" class="d-flex align-items-center gap-1">
+                                    {% csrf_token %}
+                                    {% if r.status == 'Pending' %}
+                                    <input type="hidden" name="status" value="Acknowledged">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:11px;">
+                                        <i class="bi bi-check2"></i> Dispatch Unit
+                                    </button>
+                                    {% elif r.status == 'Acknowledged' %}
+                                    <input type="hidden" name="status" value="Resolved">
+                                    <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:11px;">
+                                        <i class="bi bi-check-all"></i> Mark Resolved
+                                    </button>
+                                    {% else %}
+                                    <small class="text-success"><i class="bi bi-check-circle-fill"></i> Closed</small>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No active citizen SOS distress signals.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
