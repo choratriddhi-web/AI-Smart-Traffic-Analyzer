@@ -165,76 +165,87 @@ def update_specific_camera_video_view(request, camera_id):
 def _generate_stream_frames(camera_id: str, enable_yolo: bool = True):
     """
     Frame generator that yields MJPEG video stream with real-time YOLOv8 annotations.
+    Optimized for production with frame throttling and clean client disconnection.
     """
     detector = YOLOVehicleDetector.get_detector()
     traffic_svc = TrafficAnalyzerService.get_service()
+    cached_detections = []
+    frame_idx = 0
 
-    while True:
-        cam_mgr = CameraStreamManager.get_manager(camera_id)
-        frame_delay = 1.0 / max(1, cam_mgr.fps)
+    try:
+        while True:
+            cam_mgr = CameraStreamManager.get_manager(camera_id)
+            frame = cam_mgr.get_frame()
+            if frame is None:
+                time.sleep(0.1)
+                continue
 
-        frame = cam_mgr.get_frame()
-        if frame is None:
-            time.sleep(0.1)
-            continue
+            frame_idx += 1
+            h, w = frame.shape[:2]
 
-        h, w = frame.shape[:2]
+            if enable_yolo and detector.model is not None:
+                # Run YOLO inference every 2nd frame to keep CPU cool and prevent worker locking
+                if frame_idx % 2 == 1 or not cached_detections:
+                    try:
+                        cached_detections = detector.detect_and_track(frame, confidence_threshold=0.25, track=True)
+                    except Exception as detect_err:
+                        logger.warning(f"Detection warning on {camera_id}: {detect_err}")
 
-        if enable_yolo and detector.model is not None:
-            # Real YOLOv8 inference & ByteTrack tracking
-            detections = detector.detect_and_track(frame, confidence_threshold=0.25, track=True)
-            # Process virtual line counting & density
-            tracking_info = traffic_svc.process_frame_tracking(camera_id, detections, w, h)
-            # Draw sleek cyber-purple annotations
-            annotated_frame = detector.draw_detections(
-                frame,
-                detections,
-                counting_line=tracking_info["counting_line"]
-            )
-            out_frame = annotated_frame
-        else:
-            out_frame = frame
+                tracking_info = traffic_svc.process_frame_tracking(camera_id, cached_detections, w, h)
+                annotated_frame = detector.draw_detections(
+                    frame,
+                    cached_detections,
+                    counting_line=tracking_info["counting_line"]
+                )
+                out_frame = annotated_frame
+            else:
+                out_frame = frame
 
-        # Accident detection visual annotation for CAM-04
-        if camera_id == 'CAM-04' and cam_mgr.frame_count >= 15:
-            blink = int(time.time() * 2) % 2 == 0
-            banner_color = (0, 0, 230) if blink else (0, 0, 160)
-            cv2.rectangle(out_frame, (0, 0), (w, 55), (20, 10, 35), -1)
-            cv2.rectangle(out_frame, (0, 0), (w, 55), banner_color, 2)
-            cv2.putText(
-                out_frame,
-                "! CRITICAL: VEHICLE ACCIDENT DETECTED - CAM-04 !",
-                (max(20, int(w * 0.1)), 38),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
-                (255, 255, 255) if blink else (200, 200, 255),
-                2
-            )
-            # Collision impact bounding area
-            cz_x1, cz_y1 = int(w * 0.32), int(h * 0.38)
-            cz_x2, cz_y2 = int(w * 0.72), int(h * 0.88)
-            cv2.rectangle(out_frame, (cz_x1, cz_y1), (cz_x2, cz_y2), (0, 0, 255), 3)
-            cv2.putText(
-                out_frame,
-                "COLLISION HAZARD - LANE 2/3",
-                (cz_x1 + 10, cz_y1 + 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                (0, 0, 255),
-                2
-            )
+            # Accident detection visual annotation for CAM-04
+            if camera_id == 'CAM-04' and cam_mgr.frame_count >= 15:
+                blink = int(time.time() * 2) % 2 == 0
+                banner_color = (0, 0, 230) if blink else (0, 0, 160)
+                cv2.rectangle(out_frame, (0, 0), (w, 55), (20, 10, 35), -1)
+                cv2.rectangle(out_frame, (0, 0), (w, 55), banner_color, 2)
+                cv2.putText(
+                    out_frame,
+                    "! CRITICAL: VEHICLE ACCIDENT DETECTED - CAM-04 !",
+                    (max(20, int(w * 0.1)), 38),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8,
+                    (255, 255, 255) if blink else (200, 200, 255),
+                    2
+                )
+                # Collision impact bounding area
+                cz_x1, cz_y1 = int(w * 0.32), int(h * 0.38)
+                cz_x2, cz_y2 = int(w * 0.72), int(h * 0.88)
+                cv2.rectangle(out_frame, (cz_x1, cz_y1), (cz_x2, cz_y2), (0, 0, 255), 3)
+                cv2.putText(
+                    out_frame,
+                    "COLLISION HAZARD - LANE 2/3",
+                    (cz_x1 + 10, cz_y1 + 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (0, 0, 255),
+                    2
+                )
 
-        # Encode frame to JPEG
-        ret, buffer = cv2.imencode('.jpg', out_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-        if not ret:
-            continue
+            # Encode frame to JPEG with optimal quality
+            ret, buffer = cv2.imencode('.jpg', out_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 75])
+            if not ret:
+                continue
 
-        frame_bytes = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+            frame_bytes = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-        # Limit frame rate to match video timing smoothly
-        time.sleep(frame_delay * 0.8)
+            # Maintain smooth ~12 FPS: gentle on cloud CPU, perfectly fluid in browser
+            time.sleep(0.08)
+
+    except GeneratorExit:
+        logger.info(f"Stream client disconnected from {camera_id}")
+    except Exception as stream_err:
+        logger.warning(f"Stream exit for {camera_id}: {stream_err}")
 
 def camera_stream_view(request, camera_id):
     """

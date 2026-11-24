@@ -34,10 +34,10 @@
 
             <!-- Video Stream Preview -->
             <div class="position-relative" style="background:#000; height:320px;">
-                <img src="/cameras/{{ cam.camera_id }}/stream/?mode=yolo"
-                     alt="{{ cam.name }}"
-                     class="w-100 h-100 object-fit-cover"
-                     onerror="this.onerror=null; this.outerHTML='<video src=\'/cameras/{{ cam.camera_id }}/video/\' autoplay loop muted playsinline style=\'width:100%; height:100%; object-fit:cover;\'></video>';">
+                <video autoplay loop muted playsinline class="w-100 h-100 object-fit-cover" preload="metadata">
+                    <source src="/cameras/{{ cam.camera_id }}/video/" type="video/mp4">
+                    <source src="/media/cameras/{{ cam.video_file }}" type="video/mp4">
+                </video>
 
                 <div class="position-absolute bottom-0 start-0 m-3 p-2 rounded" style="background:rgba(19,10,36,0.85); backdrop-filter:blur(6px); border:1px solid rgba(168,85,247,0.3);">
                     <small class="text-white d-block"><i class="bi bi-geo-alt text-cyan"></i> {{ cam.location }}</small>

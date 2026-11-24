@@ -66,9 +66,10 @@ urlpatterns = [
     path('assistant/', include('assistant.urls', namespace='assistant')),
 ]
 
-# Always serve media files (Camera MP4 videos, snapshots, uploads) in both dev and production
+# Always serve media files (Camera MP4 videos, snapshots, uploads) and static files in both dev and production
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static'}),
 ]
 
 if settings.DEBUG:

@@ -107,6 +107,18 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
+# Modern Django 5.x Storage Configuration
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+    },
+}
+# Fail-safe static lookup: WhiteNoise will search static/ directory directly if files are requested
+WHITENOISE_USE_FINDERS = True
+
 # Media files (Videos, Detection frames, Incident snapshots)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
