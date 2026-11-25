@@ -218,7 +218,10 @@ def logout_view(request):
     """
     Clears the session and redirects to gateway.
     """
-    request.session.flush()
+    try:
+        request.session.flush()
+    except Exception:
+        pass
     messages.info(request, "You have been logged out successfully.")
     return redirect('gateway')
 

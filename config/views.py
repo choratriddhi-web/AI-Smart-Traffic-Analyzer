@@ -15,6 +15,12 @@ from accounts.decorators import mongo_login_required, role_required
 
 logger = logging.getLogger(__name__)
 
+def safe_session_get(request, key, default=None):
+    try:
+        return request.session.get(key, default)
+    except Exception:
+        return default
+
 # Curated Verified Fuel Stations around the monitored transit grid
 REAL_PETROL_PUMPS = [
     {
@@ -208,7 +214,7 @@ def public_sos_submit_view(request):
     Immediately dispatches alert notification to the Authority control room.
     """
     if request.method == 'POST':
-        user_id = request.session.get('user_id', 'public_citizen')
+        user_id = safe_session_get(request, 'user_id', 'public_citizen')
         name = request.POST.get('name', 'Concerned Citizen').strip()
         phone = request.POST.get('phone', '').strip()
         category = request.POST.get('category', 'Medical Emergency')
@@ -235,7 +241,10 @@ def public_sos_submit_view(request):
             address=address
         )
         messages.success(request, f"🚨 EMERGENCY SOS #{ticket['ticket_number']} LOGGED! Live distress signal dispatched to Traffic Command.")
-        request.session['last_sos_ticket'] = ticket['ticket_number']
+        try:
+            request.session['last_sos_ticket'] = ticket['ticket_number']
+        except Exception:
+            pass
         return redirect('public:sos_status')
 
     return redirect('public:dashboard')
@@ -246,7 +255,7 @@ def public_quick_sos_api(request):
     AJAX one-click SOS endpoint for instant public distress alerts without login.
     """
     if request.method == 'POST':
-        user_id = request.session.get('user_id', 'public_citizen')
+        user_id = safe_session_get(request, 'user_id', 'public_citizen')
         user = getattr(request, 'mongo_user', None)
 
         name = request.POST.get('name') or (user.get('full_name') if user else 'Citizen In Distress')
@@ -282,11 +291,11 @@ def public_sos_status_view(request):
     """
     Allows registered public citizens to view active SOS emergency requests.
     """
-    user_id = request.session.get('user_id', None)
+    user_id = safe_session_get(request, 'user_id', None)
     if user_id:
         user_requests = SmartSOSService.get_user_requests(user_id)
     else:
-        last_ticket = request.session.get('last_sos_ticket')
+        last_ticket = safe_session_get(request, 'last_sos_ticket')
         if last_ticket:
             all_reqs = SmartSOSService.get_all_requests()
             user_requests = [r for r in all_reqs if r.get('ticket_number') == last_ticket]

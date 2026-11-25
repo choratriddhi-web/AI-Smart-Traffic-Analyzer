@@ -9,8 +9,12 @@ class MongoAuthMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        user_id = request.session.get('user_id')
         request.mongo_user = None
+        user_id = None
+        try:
+            user_id = request.session.get('user_id')
+        except Exception:
+            user_id = None
 
         if user_id:
             try:
