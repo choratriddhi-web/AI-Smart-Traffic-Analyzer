@@ -250,11 +250,11 @@
         <!-- Action Links -->
         <div class="traffic-card">
             <div class="d-grid gap-2">
-                <a href="{% url 'signals:index' %}?camera_id={{ camera.camera_id }}" class="btn btn-purple">
-                    <i class="bi bi-stoplights me-1"></i> Recommend Signal Timing
-                </a>
-                <a href="{% url 'prediction:index' %}?camera_id={{ camera.camera_id }}" class="btn btn-outline-purple">
+                <a href="{% url 'prediction:index' %}?camera_id={{ camera.camera_id }}" class="btn btn-purple">
                     <i class="bi bi-graph-up me-1"></i> Predict Future Volume
+                </a>
+                <a href="{% url 'traffic:lanes' %}" class="btn btn-outline-purple">
+                    <i class="bi bi-distribute-vertical me-1"></i> Manage Corridors & Lanes
                 </a>
             </div>
         </div>

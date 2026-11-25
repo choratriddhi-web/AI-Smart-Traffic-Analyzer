@@ -74,7 +74,35 @@
         </a>
 
         <ul class="sidebar-menu">
-            {% if is_authority %}
+            {% if not is_authenticated %}
+            <!-- Unauthenticated / Login Portal Navigation (Clean Auth Sidebar) -->
+            <li class="menu-category">Smart City Portal Access</li>
+            <li class="menu-item">
+                <a href="{% url 'gateway' %}" class="menu-link {% if request.path == '/gateway/' or request.path == '/' %}active{% endif %}">
+                    <i class="bi bi-grid-fill text-purple"></i>
+                    <span>Main Gateway</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'accounts:citizen_login' %}" class="menu-link {% if 'citizen/login' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-badge-fill text-cyan"></i>
+                    <span>Public Citizen Sign In</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'accounts:citizen_register' %}" class="menu-link {% if 'citizen/register' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-plus-fill text-cyan"></i>
+                    <span>Register Citizen</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'accounts:login' %}" class="menu-link {% if request.path == '/auth/login/' %}active{% endif %}">
+                    <i class="bi bi-shield-lock-fill text-purple"></i>
+                    <span>Authority Sign In</span>
+                </a>
+            </li>
+
+            {% elif is_authority %}
             <!-- Authority / Admin Navigation Menu -->
             <li class="menu-category">Command & Telemetry</li>
             <li class="menu-item">
@@ -94,7 +122,7 @@
                 <a href="{% url 'cameras:upload' %}" class="menu-link {% if 'cameras/upload' in request.path %}active{% endif %}" style="border: 1px dashed rgba(6,182,212,0.4); background: rgba(6,182,212,0.08);">
                     <i class="bi bi-cloud-arrow-up text-cyan"></i>
                     <span class="text-white fw-bold">Upload Video Detection</span>
-                    <span class="menu-badge bg-cyan text-dark" style="background:#06b6d4;">NEW</span>
+                    <span class="menu-badge bg-cyan text-dark" style="background:#06b6d4;">CAM 1-4</span>
                 </a>
             </li>
             <li class="menu-item">
@@ -105,18 +133,6 @@
             </li>
 
             <li class="menu-category">AI & Machine Learning</li>
-            <li class="menu-item">
-                <a href="{% url 'signals:index' %}" class="menu-link {% if request.resolver_match.url_name == 'index' and 'signals' in request.path %}active{% endif %}">
-                    <i class="bi bi-stoplights"></i>
-                    <span>Signal Optimization</span>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="{% url 'signals:qlearning' %}" class="menu-link {% if 'q-learning' in request.path %}active{% endif %}">
-                    <i class="bi bi-diagram-3"></i>
-                    <span>Q-Learning RL Sim</span>
-                </a>
-            </li>
             <li class="menu-item">
                 <a href="{% url 'prediction:index' %}" class="menu-link {% if 'prediction' in request.path %}active{% endif %}">
                     <i class="bi bi-graph-up-arrow"></i>
@@ -179,13 +195,6 @@
                 </a>
             </li>
             <li class="menu-item">
-                <a href="{% url 'signals:index' %}" class="menu-link {% if 'signals' in request.path %}active{% endif %}">
-                    <i class="bi bi-stoplights text-cyan"></i>
-                    <span>Signal Optimization</span>
-                    <span class="menu-badge bg-cyan text-dark fw-bold" style="background:#06b6d4;">AI</span>
-                </a>
-            </li>
-            <li class="menu-item">
                 <a href="{% url 'prediction:index' %}" class="menu-link {% if 'prediction' in request.path %}active{% endif %}">
                     <i class="bi bi-graph-up-arrow text-cyan"></i>
                     <span>Traffic Prediction (ML)</span>
@@ -193,9 +202,15 @@
                 </a>
             </li>
             <li class="menu-item">
+                <a href="{% url 'public:dashboard' %}#road-safety-rules" class="menu-link">
+                    <i class="bi bi-shield-check text-warning"></i>
+                    <span>Road Safety & Contacts</span>
+                </a>
+            </li>
+            <li class="menu-item">
                 <a href="{% url 'assistant:index' %}" class="menu-link {% if 'assistant' in request.path %}active{% endif %}">
-                    <i class="bi bi-mic-fill text-purple"></i>
-                    <span>AI Voice & Chat Assistant</span>
+                    <i class="bi bi-chat-dots-fill text-purple"></i>
+                    <span>AI Traffic Chat Assistant</span>
                 </a>
             </li>
             <li class="menu-item">

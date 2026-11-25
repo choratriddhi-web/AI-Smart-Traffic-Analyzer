@@ -45,6 +45,11 @@ class SmartTrafficSystemTestSuite(unittest.TestCase):
     def test_02_default_users_seeded(self):
         """Verify Traffic Authority and Public Citizen accounts exist."""
         users_col = get_collection("users")
+        for _ in range(15):
+            if users_col.find_one({"username": "citizen"}) and users_col.find_one({"username": "officer"}):
+                break
+            time.sleep(0.3)
+
         officer = users_col.find_one({"username": "officer"})
         citizen = users_col.find_one({"username": "citizen"})
 

@@ -72,38 +72,38 @@ def update_specific_camera_video_view(request, camera_id):
 @role_required(['Administrator', 'Traffic Authority'])
 def upload_custom_video_view(request):
     """
-    Allows Admin / Traffic Authority to upload custom MP4 videos for
-    YOLOv8 vehicle detection, ByteTrack tracking, and virtual line counting.
+    Dedicated Video Upload & Replacement Console for Core CCTV Cameras (CAM-01 to CAM-04).
+    Allows Admin / Traffic Authority to upload or change videos for CAM 1-4 directly.
+    Instantly runs YOLOv8 vehicle detection and ByteTrack line counting on that camera.
     """
     if request.method == 'POST':
+        camera_id = request.POST.get('camera_id', '').strip()
         video_file = request.FILES.get('video_file')
-        title = request.POST.get('title', '').strip()
-        location = request.POST.get('location', '').strip()
+
+        if not camera_id:
+            messages.error(request, "Please select which camera (CAM-01, CAM-02, CAM-03, CAM-04) to update.")
+            return redirect('cameras:upload')
 
         if not video_file:
             messages.error(request, "Please choose an MP4 video file to upload.")
             return redirect('cameras:upload')
 
-        if not video_file.name.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+        if not video_file.name.lower().endswith(('.mp4', '.avi', '.mov', '.mkv', '.webm')):
             messages.error(request, "Unsupported video format. Please upload an MP4, AVI, or MOV file.")
             return redirect('cameras:upload')
 
         try:
-            new_cam = register_custom_video(video_file, title, location)
-            messages.success(request, f"Custom video uploaded successfully! Assigned as {new_cam['camera_id']}. Launching YOLO detection...")
-            return redirect('cameras:detail', camera_id=new_cam['camera_id'])
+            saved_name = update_camera_video_file(camera_id, video_file)
+            messages.success(request, f"New video successfully uploaded for {camera_id} ({saved_name})! YOLOv8 vehicle detection & line counting active.")
+            return redirect('cameras:detail', camera_id=camera_id)
         except Exception as e:
-            logger.error(f"Failed to upload video: {e}")
-            messages.error(request, f"Error processing uploaded video: {e}")
+            logger.error(f"Failed to update camera video: {e}")
+            messages.error(request, f"Error processing video for {camera_id}: {e}")
             return redirect('cameras:upload')
 
-    # Fetch custom uploaded cameras
-    cameras_col = get_collection('cameras')
-    custom_cams = list(cameras_col.find({"is_custom_upload": True}).sort("created_at", -1))
-    for c in custom_cams:
-        c['id'] = str(c['_id'])
-
-    return render(request, 'cameras/upload.html', {'custom_cameras': custom_cams})
+    # Provide the 4 standard monitored cameras
+    cameras = [c for c in get_all_camera_details() if not c.get('is_custom_upload')][:4]
+    return render(request, 'cameras/upload.html', {'cameras': cameras})
 
 @mongo_login_required
 @role_required(['Traffic Authority'])

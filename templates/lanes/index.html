@@ -6,10 +6,10 @@
 {% block content %}
 <div class="row g-4 mb-4">
     <!-- Existing Configured Lanes List -->
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         <div class="traffic-card glow-purple h-100">
             <div class="card-header-custom">
-                <h5 class="card-title-custom"><i class="bi bi-diagram-2 text-purple"></i> Active Traffic Lanes</h5>
+                <h5 class="card-title-custom"><i class="bi bi-diagram-2 text-purple"></i> Active Traffic Lanes Telemetry</h5>
                 <span class="badge bg-purple">{{ lanes|length }} Configured Lanes</span>
             </div>
 
@@ -43,65 +43,12 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No lanes configured yet. Use the form on the right to add a lane.</td>
+                            <td colspan="6" class="text-center text-muted py-4">No traffic lanes configured in the system.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-
-    <!-- Add New Lane Form -->
-    <div class="col-lg-4">
-        <div class="traffic-card glow-cyan">
-            <div class="card-header-custom">
-                <h5 class="card-title-custom"><i class="bi bi-plus-circle-fill text-cyan"></i> Add New Traffic Lane</h5>
-            </div>
-
-            <form method="POST" action="{% url 'traffic:add_lane' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label text-white small fw-bold">Select Camera</label>
-                    <select name="camera_id" class="form-select form-select-custom" required>
-                        <option value="CAM-01">CAM-01 - Downtown Intersection</option>
-                        <option value="CAM-02">CAM-02 - Hospital Corridor</option>
-                        <option value="CAM-03">CAM-03 - North Ring Roundabout</option>
-                        <option value="CAM-04">CAM-04 - Metro Highway Junction</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white small fw-bold">Lane Number</label>
-                    <input type="number" name="lane_number" class="form-control form-control-custom" min="1" max="8" value="1" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white small fw-bold">Lane Descriptive Name</label>
-                    <input type="text" name="name" class="form-control form-control-custom" placeholder="e.g. Lane 1 - Fast Corridor" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white small fw-bold">Traffic Direction</label>
-                    <select name="direction" class="form-select form-select-custom">
-                        <option value="Northbound">Northbound</option>
-                        <option value="Southbound">Southbound</option>
-                        <option value="Eastbound">Eastbound</option>
-                        <option value="Westbound">Westbound</option>
-                        <option value="Circulatory">Circulatory (Roundabout)</option>
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label text-white small fw-bold">Design Capacity (Max Vehicles)</label>
-                    <input type="number" name="capacity" class="form-control form-control-custom" min="5" max="50" value="18" required>
-                    <small class="text-dim">Used to calculate percentage saturation and queue length.</small>
-                </div>
-
-                <button type="submit" class="btn btn-cyan w-100 py-2">
-                    <i class="bi bi-save me-1"></i> Register Lane Configuration
-                </button>
-            </form>
         </div>
     </div>
 </div>

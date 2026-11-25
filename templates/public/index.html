@@ -43,7 +43,7 @@
                     <i class="bi bi-geo-alt-fill me-1"></i> Google Traffic Map
                 </a>
                 <a href="{% url 'assistant:index' %}" class="btn btn-purple btn-sm">
-                    <i class="bi bi-mic me-1"></i> AI Voice Assistant
+                    <i class="bi bi-chat-dots-fill me-1"></i> AI Traffic Chat Assistant
                 </a>
             </div>
         </div>
@@ -160,47 +160,46 @@
     </div>
 </div>
 
-<!-- AI SIGNAL OPTIMIZATION & MACHINE LEARNING PREDICTION (CITIZEN TRANSIT ADVISORY) -->
-<div class="row g-4 mb-4">
+<!-- ROAD SAFETY RULES & MACHINE LEARNING PREDICTION -->
+<div class="row g-4 mb-4" id="road-safety-rules">
     <div class="col-12 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold text-white mb-0">
-            <i class="bi bi-cpu-fill text-cyan me-2"></i>Smart AI Services & Commuter Telemetry
+            <i class="bi bi-shield-check text-cyan me-2"></i>Citizen Road Safety Guidelines & Traffic Telemetry
         </h5>
         <span class="badge bg-purple bg-opacity-25 text-purple border border-purple border-opacity-40">
-            <i class="bi bi-stars me-1"></i> Public AI Transit Assistance
+            <i class="bi bi-shield-shaded me-1"></i> Public Safety & Awareness
         </span>
     </div>
 
-    <!-- Feature 1: Signal Optimization Card -->
+    <!-- Feature 1: Road Safety Rules & Laws (रस्ते सुरक्षा नियम) -->
     <div class="col-md-6">
         <div class="traffic-card glow-cyan h-100 p-4 d-flex flex-column justify-content-between" style="border-color: rgba(6,182,212,0.4);">
             <div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-cyan text-dark fw-bold" style="background:#06b6d4;">CITIZEN ADVISORY</span>
-                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> ACTIVE AI TIMING</span>
+                    <span class="badge bg-cyan text-dark fw-bold" style="background:#06b6d4;">SAFETY MANDATE</span>
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> MVA RULES 2026</span>
                 </div>
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="p-3 rounded-3" style="background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.4);">
-                        <i class="bi bi-stoplights-fill text-cyan fs-2"></i>
+                        <i class="bi bi-shield-fill-check text-cyan fs-2"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold text-white mb-0">Signal Optimization</h4>
-                        <small class="text-muted">Dynamic Adaptive Traffic Light Timing</small>
+                        <h4 class="fw-bold text-white mb-0">Road Safety Rules</h4>
+                        <small class="text-muted">रस्ते सुरक्षा नियम & Mandatory Guidelines</small>
                     </div>
                 </div>
-                <p class="text-light opacity-90 small mb-3">
-                    View real-time AI signal timings computed for city intersections. Algorithms dynamically optimize green light duration based on live vehicle density, waiting time, and queue length to minimize commuter delays.
-                </p>
-                <div class="p-2 rounded mb-3" style="background:rgba(6,182,212,0.08); border:1px dashed var(--accent-cyan);">
-                    <div class="d-flex justify-content-between small text-muted">
-                        <span>Current Cycle: <strong class="text-white">45s Dynamic Green</strong></span>
-                        <span>Delay Reduction: <strong class="text-success">&darr; 88.5%</strong></span>
-                    </div>
-                </div>
+
+                <ul class="text-light list-unstyled small mb-3" style="line-height:2.0;">
+                    <li><i class="bi bi-check2-circle text-cyan me-2"></i><strong>Helmet Mandate (Sec. 129):</strong> Both rider and pillion must wear certified ISI helmets.</li>
+                    <li><i class="bi bi-check2-circle text-cyan me-2"></i><strong>Seatbelt Law (Sec. 194B):</strong> All front and rear passengers must remain buckled.</li>
+                    <li><i class="bi bi-check2-circle text-cyan me-2"></i><strong>Speed Limits:</strong> 50 km/h on city arterial roads, 25 km/h in school & hospital zones.</li>
+                    <li><i class="bi bi-check2-circle text-cyan me-2"></i><strong>Zebra Crossings:</strong> Pedestrians have absolute right of way at all crossings.</li>
+                    <li><i class="bi bi-check2-circle text-cyan me-2"></i><strong>Zero Tolerance Drink & Drive:</strong> Strictly prohibited under Section 185.</li>
+                </ul>
             </div>
-            <a href="{% url 'signals:index' %}" class="btn btn-cyan w-100 py-2 fw-bold text-dark d-flex align-items-center justify-content-center gap-2" style="background:#06b6d4;">
-                <i class="bi bi-stoplights"></i>
-                <span>Open Signal Optimization &rarr;</span>
+            <a href="{% url 'assistant:index' %}" class="btn btn-cyan w-100 py-2 fw-bold text-dark d-flex align-items-center justify-content-center gap-2" style="background:#06b6d4;">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Ask AI Assistant for Road Safety Rules &rarr;</span>
             </a>
         </div>
     </div>
@@ -227,9 +226,9 @@
                 </p>
                 <div class="p-2 rounded mb-3" style="background:rgba(168,85,247,0.08); border:1px dashed var(--accent-purple);">
                     <div class="d-flex justify-content-between small text-muted">
-                        <span>+5m Forecast: <strong class="text-cyan">Moderate</strong></span>
-                        <span>+15m Forecast: <strong class="text-purple">Moderate</strong></span>
-                        <span>+30m Forecast: <strong class="text-warning">High</strong></span>
+                        <span>+5m Forecast: <strong class="text-cyan">Moderate Flow</strong></span>
+                        <span>+15m Forecast: <strong class="text-purple">Steady Flow</strong></span>
+                        <span>+30m Forecast: <strong class="text-warning">Moderate Heavy</strong></span>
                     </div>
                 </div>
             </div>
@@ -241,32 +240,123 @@
     </div>
 </div>
 
-<!-- Simulated Traffic Signal Notice & Detailed SOS Form -->
+<!-- EMERGENCY CONTACTS & LIVE GPS LOCATION SHARING -->
 <div class="row g-4 mb-4">
-    <!-- Simulated Traffic Signal Display (4 Cols) -->
-    <div class="col-lg-4">
-        <div class="traffic-card glow-purple text-center h-100">
-            <div class="card-header-custom justify-content-center">
-                <h5 class="card-title-custom"><i class="bi bi-stoplights text-purple"></i> Simulated Signal Status</h5>
+    <!-- Emergency Contacts Directory (6 Cols) -->
+    <div class="col-lg-6">
+        <div class="traffic-card glow-purple h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title-custom mb-0"><i class="bi bi-telephone-inbound-fill text-danger me-2"></i>Emergency Hotlines & Contacts</h5>
+                <span class="badge bg-danger animate-pulse">24/7 HELPLINE</span>
             </div>
-            <div class="badge bg-warning text-dark mb-2" style="font-size:10px;">
-                SIMULATED AI SIGNAL – NOT CONNECTED TO REAL TRAFFIC LIGHTS
-            </div>
+            <p class="text-muted small mb-3">Direct-dial verified emergency assistance numbers for police, medical ambulance, and traffic control room.</p>
 
-            <div class="traffic-signal-box mx-auto my-3" style="width:78px;">
-                <div class="signal-bulb red" id="pub-signal-red"></div>
-                <div class="signal-bulb yellow" id="pub-signal-yellow"></div>
-                <div class="signal-bulb green active" id="pub-signal-green"></div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="tel:112" class="btn btn-outline-danger w-100 text-start p-2 d-flex align-items-center justify-content-between text-decoration-none">
+                        <div>
+                            <strong class="d-block text-white" style="font-size:13px;"><i class="bi bi-shield-fill me-1"></i> National Police</strong>
+                            <small class="text-muted" style="font-size:11px;">Emergency Response</small>
+                        </div>
+                        <span class="badge bg-danger fs-6">112</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="tel:108" class="btn btn-outline-danger w-100 text-start p-2 d-flex align-items-center justify-content-between text-decoration-none">
+                        <div>
+                            <strong class="d-block text-white" style="font-size:13px;"><i class="bi bi-hospital-fill me-1"></i> Medical Ambulance</strong>
+                            <small class="text-muted" style="font-size:11px;">Trauma Response</small>
+                        </div>
+                        <span class="badge bg-danger fs-6">108</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="tel:103" class="btn btn-outline-purple w-100 text-start p-2 d-flex align-items-center justify-content-between text-decoration-none">
+                        <div>
+                            <strong class="d-block text-white" style="font-size:13px;"><i class="bi bi-stoplights me-1"></i> Traffic Police</strong>
+                            <small class="text-muted" style="font-size:11px;">City Control Room</small>
+                        </div>
+                        <span class="badge bg-purple fs-6">103</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="tel:1033" class="btn btn-outline-cyan w-100 text-start p-2 d-flex align-items-center justify-content-between text-decoration-none">
+                        <div>
+                            <strong class="d-block text-white" style="font-size:13px;"><i class="bi bi-signpost-split me-1"></i> Highway Helpline</strong>
+                            <small class="text-muted" style="font-size:11px;">Expressway Distress</small>
+                        </div>
+                        <span class="badge bg-cyan text-dark fs-6" style="background:#06b6d4;">1033</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="tel:1091" class="btn btn-outline-secondary w-100 text-start p-2 d-flex align-items-center justify-content-between text-decoration-none">
+                        <div>
+                            <strong class="d-block text-white" style="font-size:13px;"><i class="bi bi-person-heart me-1"></i> Women Helpline</strong>
+                            <small class="text-muted" style="font-size:11px;">Safety Support</small>
+                        </div>
+                        <span class="badge bg-secondary fs-6">1091</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="tel:101" class="btn btn-outline-warning w-100 text-start p-2 d-flex align-items-center justify-content-between text-decoration-none">
+                        <div>
+                            <strong class="d-block text-white" style="font-size:13px;"><i class="bi bi-fire me-1"></i> Fire & Rescue</strong>
+                            <small class="text-muted" style="font-size:11px;">Disaster Services</small>
+                        </div>
+                        <span class="badge bg-warning text-dark fs-6">101</span>
+                    </a>
+                </div>
             </div>
-
-            <h3 class="fw-bold text-white mb-0" id="pub-signal-timer">38s</h3>
-            <span class="badge bg-success" id="pub-signal-status">GREEN FLOW ACTIVE</span>
-            <small class="text-muted d-block mt-2">Corridor traffic progressing steadily</small>
         </div>
     </div>
 
-    <!-- Detailed Smart SOS Submission Form (8 Cols) -->
-    <div class="col-lg-8">
+    <!-- Live GPS Location Share Widget (6 Cols) -->
+    <div class="col-lg-6">
+        <div class="traffic-card glow-cyan h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title-custom mb-0"><i class="bi bi-geo-alt-fill text-cyan me-2"></i>Live Location Sharing (लाईव्ह लोकेशन शेअर)</h5>
+                <span class="badge bg-cyan text-dark fw-bold" style="background:#06b6d4;">GPS TOOL</span>
+            </div>
+            <p class="text-muted small mb-3">Detect your precise real-time coordinates and instantly share your location with emergency services or loved ones via WhatsApp/Maps.</p>
+
+            <div class="p-3 rounded mb-3" style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.25);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-muted small">Current Coordinates:</span>
+                    <strong class="text-cyan font-monospace" id="live-loc-coords">Click Detect Location below</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                    <span>GPS Status:</span>
+                    <span id="live-loc-status"><i class="bi bi-circle-fill text-secondary me-1" style="font-size:8px;"></i> Standby</span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <button type="button" class="btn btn-cyan btn-sm flex-grow-1 fw-bold text-dark" style="background:#06b6d4;" onclick="detectLiveShareLocation()">
+                    <i class="bi bi-crosshair me-1"></i> Detect My Live GPS
+                </button>
+                <button type="button" class="btn btn-outline-cyan btn-sm" id="btn-copy-coords" onclick="copyLiveCoordinates()" disabled>
+                    <i class="bi bi-clipboard me-1"></i> Copy
+                </button>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="#" id="link-maps-share" target="_blank" class="btn btn-sm btn-outline-light flex-grow-1 disabled">
+                    <i class="bi bi-map me-1"></i> Open in Google Maps
+                </a>
+                <a href="#" id="link-whatsapp-share" target="_blank" class="btn btn-sm btn-success flex-grow-1 disabled">
+                    <i class="bi bi-whatsapp me-1"></i> Share on WhatsApp
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="syncLocationToSos()">
+                    <i class="bi bi-life-preserver me-1"></i> Use in SOS
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Smart SOS Submission Form -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
         <div class="traffic-card glow-cyan">
             <div class="card-header-custom">
                 <h5 class="card-title-custom"><i class="bi bi-file-earmark-medical text-danger"></i> Detailed Citizen SOS Dispatch Request</h5>
@@ -361,61 +451,96 @@
 
 {% block extra_scripts %}
 <script>
-    // Simulated countdown
-    let pTimer = 38;
-    let pPhase = 'green';
-    const pRed = document.getElementById('pub-signal-red');
-    const pYel = document.getElementById('pub-signal-yellow');
-    const pGrn = document.getElementById('pub-signal-green');
-    const pTimerElem = document.getElementById('pub-signal-timer');
-    const pStatusElem = document.getElementById('pub-signal-status');
+    // Live GPS Location Detection & Share Tool
+    let currentLiveLat = null;
+    let currentLiveLng = null;
 
-    setInterval(() => {
-        pTimer--;
-        if (pTimer <= 0) {
-            if (pPhase === 'green') {
-                pPhase = 'yellow';
-                pTimer = 4;
-                pRed.classList.remove('active');
-                pYel.classList.add('active');
-                pGrn.classList.remove('active');
-                pStatusElem.textContent = 'YELLOW TRANSITION';
-                pStatusElem.className = 'badge bg-warning text-dark';
-            } else if (pPhase === 'yellow') {
-                pPhase = 'red';
-                pTimer = 25;
-                pRed.classList.add('active');
-                pYel.classList.remove('active');
-                pGrn.classList.remove('active');
-                pStatusElem.textContent = 'RED PHASE STOP';
-                pStatusElem.className = 'badge bg-danger';
-            } else {
-                pPhase = 'green';
-                pTimer = 38;
-                pRed.classList.remove('active');
-                pYel.classList.remove('active');
-                pGrn.classList.add('active');
-                pStatusElem.textContent = 'GREEN FLOW ACTIVE';
-                pStatusElem.className = 'badge bg-success';
-            }
-        }
-        pTimerElem.textContent = `${pTimer}s`;
-    }, 1000);
+    function detectLiveShareLocation() {
+        const coordsElem = document.getElementById('live-loc-coords');
+        const statusElem = document.getElementById('live-loc-status');
+        const copyBtn = document.getElementById('btn-copy-coords');
+        const mapsLink = document.getElementById('link-maps-share');
+        const waLink = document.getElementById('link-whatsapp-share');
 
-    function autoFetchLocation() {
         if (!navigator.geolocation) {
-            alert('Geolocation not supported in your browser.');
+            alert('Geolocation is not supported by your browser.');
             return;
         }
+
+        if (coordsElem) coordsElem.innerHTML = '<span class="spinner-border spinner-border-sm me-1 text-cyan"></span> Detecting GPS...';
+        if (statusElem) statusElem.innerHTML = '<span class="text-warning"><i class="bi bi-crosshair animate-pulse"></i> Acquiring satellite signal...</span>';
+
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                document.getElementById('sos-latitude').value = pos.coords.latitude.toFixed(6);
-                document.getElementById('sos-longitude').value = pos.coords.longitude.toFixed(6);
+                currentLiveLat = pos.coords.latitude.toFixed(6);
+                currentLiveLng = pos.coords.longitude.toFixed(6);
+                const acc = Math.round(pos.coords.accuracy || 15);
+
+                if (coordsElem) coordsElem.textContent = `${currentLiveLat}° N, ${currentLiveLng}° E (±${acc}m)`;
+                if (statusElem) statusElem.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill text-success"></i> Live GPS Locked</span>';
+
+                if (copyBtn) copyBtn.disabled = false;
+
+                const mapsUrl = `https://www.google.com/maps?q=${currentLiveLat},${currentLiveLng}`;
+                if (mapsLink) {
+                    mapsLink.href = mapsUrl;
+                    mapsLink.classList.remove('disabled');
+                }
+
+                const waText = encodeURIComponent(`🚨 Emergency Live Location Alert: I am currently at ${currentLiveLat}, ${currentLiveLng}. View location on Google Maps: ${mapsUrl}`);
+                if (waLink) {
+                    waLink.href = `https://api.whatsapp.com/send?text=${waText}`;
+                    waLink.classList.remove('disabled');
+                }
+
+                // Also populate SOS inputs
+                const latInput = document.getElementById('sos-latitude');
+                const lngInput = document.getElementById('sos-longitude');
+                if (latInput) latInput.value = currentLiveLat;
+                if (lngInput) lngInput.value = currentLiveLng;
             },
             (err) => {
-                alert(`Location error: ${err.message}`);
-            }
+                if (coordsElem) coordsElem.textContent = '19.076000° N, 72.877700° E (Default City Center)';
+                if (statusElem) statusElem.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-circle"></i> ${err.message}. Using default city coordinates.</span>`;
+                currentLiveLat = '19.076000';
+                currentLiveLng = '72.877700';
+                if (copyBtn) copyBtn.disabled = false;
+                const mapsUrl = `https://www.google.com/maps?q=${currentLiveLat},${currentLiveLng}`;
+                if (mapsLink) {
+                    mapsLink.href = mapsUrl;
+                    mapsLink.classList.remove('disabled');
+                }
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
         );
+    }
+
+    function copyLiveCoordinates() {
+        if (!currentLiveLat || !currentLiveLng) return;
+        const text = `${currentLiveLat}, ${currentLiveLng}`;
+        navigator.clipboard.writeText(text).then(() => {
+            const copyBtn = document.getElementById('btn-copy-coords');
+            if (copyBtn) {
+                copyBtn.innerHTML = '<i class="bi bi-check-lg text-success"></i> Copied!';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copy';
+                }, 2000);
+            }
+        });
+    }
+
+    function syncLocationToSos() {
+        if (!currentLiveLat) detectLiveShareLocation();
+        const latInput = document.getElementById('sos-latitude');
+        const lngInput = document.getElementById('sos-longitude');
+        if (latInput && currentLiveLat) latInput.value = currentLiveLat;
+        if (lngInput && currentLiveLng) lngInput.value = currentLiveLng;
+        const sosForm = document.getElementById('public-sos-section');
+        if (sosForm) sosForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function autoFetchLocation() {
+        detectLiveShareLocation();
     }
 
     // Instant One-Click Emergency SOS Trigger (Zero latency, immediate dispatch)
@@ -426,8 +551,8 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> TRANSMITTING EMERGENCY DISTRESS SIGNAL...';
 
-        let uLat = 19.0760;
-        let uLng = 72.8777;
+        let uLat = currentLiveLat ? parseFloat(currentLiveLat) : 19.0760;
+        let uLng = currentLiveLng ? parseFloat(currentLiveLng) : 72.8777;
 
         const latInput = document.getElementById('sos-latitude');
         const lngInput = document.getElementById('sos-longitude');
