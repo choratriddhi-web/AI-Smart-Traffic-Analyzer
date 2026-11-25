@@ -19,9 +19,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY . .
 
-# Run collectstatic at build time
-RUN python manage.py collectstatic --noinput
+# Run migrations and collectstatic at image build time
+RUN python manage.py migrate --noinput && \
+    python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 1 --threads 4 --timeout 120"]
+CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 1 --threads 4 --timeout 120"]

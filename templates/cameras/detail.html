@@ -22,11 +22,11 @@
                     {% endif %}
                 </div>
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-purple active" id="btn-mode-yolo" onclick="switchStreamMode('yolo')">
-                        <i class="bi bi-bounding-box me-1"></i> AI YOLO Stream
+                    <button class="btn btn-purple active" id="btn-mode-raw" onclick="switchStreamMode('raw')">
+                        <i class="bi bi-play-circle-fill me-1"></i> AI Detection Feed
                     </button>
-                    <button class="btn btn-outline-purple" id="btn-mode-raw" onclick="switchStreamMode('raw')">
-                        <i class="bi bi-film me-1"></i> Raw Stream
+                    <button class="btn btn-outline-purple" id="btn-mode-yolo" onclick="switchStreamMode('yolo')">
+                        <i class="bi bi-cpu-fill me-1"></i> Server YOLO Stream
                     </button>
                 </div>
             </div>
@@ -48,22 +48,26 @@
             </div>
 
             <!-- Video Player Display Container -->
-            <div class="position-relative" style="background:#000; min-height:480px;" id="video-stream-container">
-                <img id="active-live-stream"
-                     src="/cameras/{{ camera.camera_id }}/stream/?mode=yolo"
-                     alt="{{ camera.name }}"
-                     class="w-100 h-100 object-fit-contain d-block"
-                     onerror="enableVideoFallback()">
-
-                <!-- Native Video Player fallback for direct MP4 playback -->
-                <video id="native-mp4-video" class="w-100 h-100 object-fit-contain d-none" loop muted playsinline autoplay controls>
+            <div class="position-relative overflow-hidden" style="background:#000; min-height:480px;" id="video-stream-container" data-camera-overlay="{{ camera.camera_id }}">
+                <!-- Native Video Player for direct MP4 playback -->
+                <video id="native-mp4-video" class="w-100 h-100 object-fit-contain d-block" loop muted playsinline autoplay controls>
                     <source src="/cameras/{{ camera.camera_id }}/video/" type="video/mp4">
                     <source src="/media/cameras/{{ camera.video_file }}" type="video/mp4">
                     Your browser does not support HTML5 video.
                 </video>
 
+                <!-- High-Tech Cyber-Purple AI Detection & Tracking Canvas Overlay -->
+                <canvas id="ai-canvas-{{ camera.camera_id }}" class="position-absolute top-0 start-0 w-100 h-100" style="pointer-events: none; z-index: 5;"></canvas>
+
+                <!-- Server-Side MJPEG Live Stream -->
+                <img id="active-live-stream"
+                     src=""
+                     alt="{{ camera.name }}"
+                     class="w-100 h-100 object-fit-contain d-none"
+                     onerror="enableVideoFallback()">
+
                 <!-- Overlay Telemetry -->
-                <div class="position-absolute top-0 start-0 m-3 p-2 rounded" style="background:rgba(19,10,36,0.8); backdrop-filter:blur(8px); border:1px solid rgba(168,85,247,0.3); font-size:11px;">
+                <div class="position-absolute top-0 start-0 m-3 p-2 rounded" style="background:rgba(19,10,36,0.8); backdrop-filter:blur(8px); border:1px solid rgba(168,85,247,0.3); font-size:11px; z-index: 6;">
                     <div class="text-white"><i class="bi bi-cpu text-purple me-1"></i> YOLOv8n + ByteTrack</div>
                     <div class="text-cyan"><i class="bi bi-record-circle text-danger me-1"></i> Real-Time Inference: 24.8 ms</div>
                 </div>
@@ -359,6 +363,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{% static 'js/ai_camera_overlay.js' %}"></script>
 <script>
     let isPaused = false;
     let currentMode = 'yolo';
@@ -500,19 +505,33 @@
 
     function switchStreamMode(mode) {
         currentMode = mode;
-        document.getElementById('btn-mode-yolo').classList.toggle('active', mode === 'yolo');
-        document.getElementById('btn-mode-raw').classList.toggle('active', mode === 'raw');
+        const btnYolo = document.getElementById('btn-mode-yolo');
+        const btnRaw = document.getElementById('btn-mode-raw');
         const stream = document.getElementById('active-live-stream');
         const video = document.getElementById('native-mp4-video');
-        if (mode === 'raw') {
-            stream.classList.add('d-none');
-            video.classList.remove('d-none');
-            video.play().catch(e => console.log('Video play:', e));
+        const canvas = document.getElementById('ai-canvas-{{ camera.camera_id }}');
+
+        if (mode === 'yolo') {
+            if (btnYolo) btnYolo.classList.add('active');
+            if (btnRaw) btnRaw.classList.remove('active');
+            if (video) video.classList.add('d-none');
+            if (canvas) canvas.style.display = 'none';
+            if (stream) {
+                stream.classList.remove('d-none');
+                stream.src = `/cameras/{{ camera.camera_id }}/stream/?mode=yolo&t=${new Date().getTime()}`;
+            }
         } else {
-            video.pause();
-            video.classList.add('d-none');
-            stream.classList.remove('d-none');
-            stream.src = `/cameras/{{ camera.camera_id }}/stream/?mode=yolo&t=${new Date().getTime()}`;
+            if (btnRaw) btnRaw.classList.add('active');
+            if (btnYolo) btnYolo.classList.remove('active');
+            if (stream) {
+                stream.src = '';
+                stream.classList.add('d-none');
+            }
+            if (video) {
+                video.classList.remove('d-none');
+                video.play().catch(e => console.log('Video play:', e));
+            }
+            if (canvas) canvas.style.display = 'block';
         }
     }
 

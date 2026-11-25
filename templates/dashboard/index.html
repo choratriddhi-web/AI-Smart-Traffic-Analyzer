@@ -87,24 +87,28 @@
     {% for cam in cameras %}
     <div class="col-md-6 col-xl-3">
         <div class="traffic-card h-100 p-0 overflow-hidden">
-            <!-- Video Thumbnail / Live Stream Preview -->
-            <div class="position-relative" style="height: 180px; background: #000;">
-                <video autoplay loop muted playsinline class="w-100 h-100 object-fit-cover" preload="metadata">
+            <!-- Video Thumbnail / Live Stream Preview with AI Overlay -->
+            <div class="position-relative overflow-hidden" style="height: 190px; background: #000;" data-camera-overlay="{{ cam.camera_id }}">
+                <video id="video-{{ cam.camera_id }}" autoplay loop muted playsinline class="w-100 h-100 object-fit-cover" preload="metadata">
                     <source src="/cameras/{{ cam.camera_id }}/video/" type="video/mp4">
                     <source src="/media/cameras/{{ cam.video_file }}" type="video/mp4">
                 </video>
 
-                <div class="position-absolute top-0 start-0 m-2">
-                    <span class="badge bg-danger" style="font-size:10px;"><i class="bi bi-record-circle me-1"></i> LIVE</span>
+                <!-- High-Tech Cyber-Purple AI Detection & Tracking Canvas Overlay -->
+                <canvas id="ai-canvas-{{ cam.camera_id }}" class="position-absolute top-0 start-0 w-100 h-100" style="pointer-events: none; z-index: 5;"></canvas>
+
+                <div class="position-absolute top-0 start-0 m-2 d-flex align-items-center gap-1" style="z-index: 6;">
+                    <span class="badge bg-danger animate-pulse" style="font-size:9px;"><i class="bi bi-record-circle me-1"></i> LIVE AI</span>
+                    <span class="badge bg-dark bg-opacity-75 text-cyan border border-info border-opacity-25" style="font-size:9px;">YOLOv8 + ByteTrack</span>
                 </div>
-                <div class="position-absolute top-0 end-0 m-2">
-                    <span class="badge bg-dark bg-opacity-75 text-cyan border border-info border-opacity-25" style="font-size:10px;">
+                <div class="position-absolute top-0 end-0 m-2" style="z-index: 6;">
+                    <span class="badge bg-purple" style="font-size:9px; font-weight:700;">
                         {{ cam.camera_id }}
                     </span>
                 </div>
                 {% if cam.is_custom_upload %}
-                <div class="position-absolute bottom-0 start-0 m-2">
-                    <span class="badge bg-info text-dark" style="font-size:10px;">CUSTOM UPLOAD</span>
+                <div class="position-absolute bottom-0 start-0 m-2" style="z-index: 6;">
+                    <span class="badge bg-info text-dark" style="font-size:9px;">CUSTOM UPLOAD</span>
                 </div>
                 {% endif %}
             </div>
@@ -113,15 +117,34 @@
                 <h6 class="fw-bold text-white mb-1 text-truncate" title="{{ cam.name }}">{{ cam.name }}</h6>
                 <p class="text-muted small text-truncate mb-2"><i class="bi bi-geo-alt text-purple"></i> {{ cam.location }}</p>
 
-                <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded" style="background: rgba(168,85,247,0.06);">
-                    <div>
-                        <small class="text-muted d-block" style="font-size:10px;">DENSITY</small>
-                        <span class="badge bg-{{ cam.density_color|default:'info' }}">{{ cam.density|default:'MODERATE' }}</span>
+                <!-- Real-Time AI Vehicle Counting Metrics -->
+                <div class="row text-center g-1 mb-2">
+                    <div class="col-4">
+                        <div class="p-1 rounded" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
+                            <small class="text-muted d-block" style="font-size:9px;">IN FRAME</small>
+                            <span id="counter-active-{{ cam.camera_id }}" class="fw-bold text-cyan" style="font-size:13px;">{{ cam.active_count|default:8 }}</span>
+                        </div>
                     </div>
-                    <div class="text-end">
-                        <small class="text-muted d-block" style="font-size:10px;">VEHICLES</small>
-                        <span class="fw-bold text-cyan">{{ cam.active_count|default:8 }} in frame</span>
+                    <div class="col-4">
+                        <div class="p-1 rounded" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
+                            <small class="text-muted d-block" style="font-size:9px;">LINE COUNT</small>
+                            <span id="counter-line-{{ cam.camera_id }}" class="fw-bold text-white" style="font-size:13px;">{{ cam.line_total|default:24 }}</span>
+                        </div>
                     </div>
+                    <div class="col-4">
+                        <div class="p-1 rounded" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
+                            <small class="text-muted d-block" style="font-size:9px;">DENSITY</small>
+                            <span id="badge-density-{{ cam.camera_id }}" class="badge bg-{{ cam.density_color|default:'info' }} p-1" style="font-size:10px;">{{ cam.density|default:'MODERATE' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class-Wise Live Breakdown -->
+                <div class="d-flex justify-content-between align-items-center mb-3 px-1" style="font-size:10px; color:#cbd5e1;">
+                    <span><i class="bi bi-car-front text-purple me-1"></i>Cars: <strong id="count-car-{{ cam.camera_id }}" class="text-white">3</strong></span>
+                    <span><i class="bi bi-bicycle text-warning me-1"></i>Bikes: <strong id="count-bike-{{ cam.camera_id }}" class="text-white">1</strong></span>
+                    <span><i class="bi bi-truck text-cyan me-1"></i>Trucks: <strong id="count-truck-{{ cam.camera_id }}" class="text-white">1</strong></span>
+                    <span><i class="bi bi-bus-front text-info me-1"></i>Buses: <strong id="count-bus-{{ cam.camera_id }}" class="text-white">1</strong></span>
                 </div>
 
                 <a href="{% url 'cameras:detail' cam.camera_id %}" class="btn btn-purple btn-sm w-100">
@@ -181,4 +204,5 @@
 
 {% block extra_scripts %}
 <script src="{% static 'js/traffic_charts.js' %}"></script>
+<script src="{% static 'js/ai_camera_overlay.js' %}"></script>
 {% endblock %}
