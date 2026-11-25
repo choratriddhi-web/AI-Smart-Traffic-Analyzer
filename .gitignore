@@ -44,3 +44,5 @@ media/processed/*
 # Temporary files
 temp/
 tmp/
+
+logs/django_sessions.sqlite3
