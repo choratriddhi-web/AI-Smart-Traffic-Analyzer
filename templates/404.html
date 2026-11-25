@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Page Not Found | AI Smart Traffic Analyzer{% endblock %}
+{% block page_title %}<i class="bi bi-exclamation-octagon text-purple"></i> Page Not Found (404){% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 col-lg-6 text-center">
+        <div class="traffic-card glow-purple p-5">
+            <div class="mb-4">
+                <span class="display-1 fw-extrabold text-transparent bg-clip-text" style="background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    404
+                </span>
+            </div>
+            <h3 class="fw-bold text-white mb-3">Traffic Route Not Found</h3>
+            <p class="text-muted mb-4">
+                The requested URL or traffic telemetry corridor does not exist or has been redirected.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'gateway' %}" class="btn btn-purple px-4 py-2 fw-bold">
+                    <i class="bi bi-grid-fill me-1"></i> Main Gateway
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-cyan px-4 py-2">
+                    <i class="bi bi-arrow-left me-1"></i> Go Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

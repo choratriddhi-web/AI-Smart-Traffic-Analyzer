@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-ai-smart-traffic-analyzer-purple-2026')
-DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = ['*']
 
 # CSRF Trusted Origins for live production deployment (Render, Railway, Heroku, etc.)
@@ -90,6 +90,13 @@ DATABASES = {
         'NAME': BASE_DIR / 'logs' / 'django_sessions.sqlite3',
     }
 }
+
+# Session Configuration (Signed Cookies: 100% database-free, stateless, immune to SQLite missing tables on Render/Railway)
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
