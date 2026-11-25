@@ -326,31 +326,51 @@
         }
 
         updateDomCounts(classCounts) {
-            // Update line counted element
+            // Update line counted element (card and detail)
             const lineEl = document.getElementById(`counter-line-${this.camId}`);
             if (lineEl) lineEl.textContent = this.lineCount;
 
-            // Update active vehicles element
+            const detailLineEl = document.getElementById('line-total-count');
+            if (detailLineEl) detailLineEl.textContent = this.lineCount;
+
+            // Update active vehicles element (card and detail)
             const activeEl = document.getElementById(`counter-active-${this.camId}`);
             if (activeEl) activeEl.textContent = this.activeCount;
 
-            // Update density badge
+            const detailActiveEl = document.getElementById('live-active-counter');
+            if (detailActiveEl) detailActiveEl.textContent = `${this.activeCount} Active`;
+
+            // Calculate density
+            let densityText = 'MODERATE';
+            let densityBadgeBg = 'warning text-dark';
+            let densityColor = 'warning';
+            if (this.activeCount >= 9) {
+                densityText = 'HIGH';
+                densityBadgeBg = 'danger';
+                densityColor = 'danger';
+            } else if (this.activeCount <= 4) {
+                densityText = 'LOW';
+                densityBadgeBg = 'success';
+                densityColor = 'success';
+            }
+
+            // Update density badge (card)
             const densityBadge = document.getElementById(`badge-density-${this.camId}`);
             if (densityBadge) {
-                if (this.activeCount >= 9) {
-                    densityBadge.className = 'badge bg-danger mt-1';
-                    densityBadge.textContent = 'HIGH';
-                } else if (this.activeCount >= 5) {
-                    densityBadge.className = 'badge bg-warning text-dark mt-1';
-                    densityBadge.textContent = 'MODERATE';
-                } else {
-                    densityBadge.className = 'badge bg-success mt-1';
-                    densityBadge.textContent = 'LOW';
-                }
+                densityBadge.className = `badge bg-${densityBadgeBg} mt-1`;
+                densityBadge.textContent = densityText;
+            }
+
+            // Update density badge (detail)
+            const detailDensityBadge = document.getElementById('density-badge');
+            if (detailDensityBadge) {
+                detailDensityBadge.className = `badge bg-${densityColor}`;
+                detailDensityBadge.textContent = densityText;
             }
 
             // Update class breakdowns
             if (classCounts) {
+                // Dashboard & list camera cards
                 const carEl = document.getElementById(`count-car-${this.camId}`);
                 if (carEl) carEl.textContent = classCounts.car;
                 const bikeEl = document.getElementById(`count-bike-${this.camId}`);
@@ -359,6 +379,24 @@
                 if (truckEl) truckEl.textContent = classCounts.truck;
                 const busEl = document.getElementById(`count-bus-${this.camId}`);
                 if (busEl) busEl.textContent = classCounts.bus;
+
+                // Detail page classification counters
+                const detailCars = document.getElementById('count-cars');
+                if (detailCars) detailCars.textContent = classCounts.car;
+                const detailBikes = document.getElementById('count-motorcycles');
+                if (detailBikes) detailBikes.textContent = classCounts.motorcycle;
+                const detailBuses = document.getElementById('count-buses');
+                if (detailBuses) detailBuses.textContent = classCounts.bus;
+                const detailTrucks = document.getElementById('count-trucks');
+                if (detailTrucks) detailTrucks.textContent = classCounts.truck;
+
+                // Detail page lane telemetry estimates
+                const l1 = document.getElementById('l1-count');
+                const l2 = document.getElementById('l2-count');
+                const l3 = document.getElementById('l3-count');
+                if (l1) l1.textContent = Math.max(1, Math.round(this.activeCount * 0.25));
+                if (l2) l2.textContent = Math.max(2, Math.round(this.activeCount * 0.50));
+                if (l3) l3.textContent = Math.max(1, Math.round(this.activeCount * 0.25));
             }
         }
     }

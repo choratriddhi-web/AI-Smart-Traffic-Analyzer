@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ camera.camera_id }} - {{ camera.name }} - AI Smart Traffic Analyzer{% endblock %}
 {% block page_title %}
@@ -366,7 +367,7 @@
 <script src="{% static 'js/ai_camera_overlay.js' %}"></script>
 <script>
     let isPaused = false;
-    let currentMode = 'yolo';
+    let currentMode = 'raw';
     let accidentPopupTriggered = false;
     let accidentModalInstance = null;
     let lastAccidentDetails = null;
@@ -514,7 +515,10 @@
         if (mode === 'yolo') {
             if (btnYolo) btnYolo.classList.add('active');
             if (btnRaw) btnRaw.classList.remove('active');
-            if (video) video.classList.add('d-none');
+            if (video) {
+                video.pause();
+                video.classList.add('d-none');
+            }
             if (canvas) canvas.style.display = 'none';
             if (stream) {
                 stream.classList.remove('d-none');
@@ -529,21 +533,27 @@
             }
             if (video) {
                 video.classList.remove('d-none');
-                video.play().catch(e => console.log('Video play:', e));
+                video.play().catch(e => console.log('Video play deferred:', e));
             }
             if (canvas) canvas.style.display = 'block';
         }
     }
 
     function togglePlayback() {
+        const video = document.getElementById('native-mp4-video');
         if (!isPaused) {
-            streamImg.src = '';
+            if (video) video.pause();
+            if (streamImg) streamImg.src = '';
             isPaused = true;
             playPauseBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Resume Feed';
             playPauseBtn.classList.replace('btn-purple', 'btn-success');
         } else {
             isPaused = false;
-            switchStreamMode(currentMode);
+            if (currentMode === 'raw' && video) {
+                video.play().catch(e => console.log('Video play deferred:', e));
+            } else {
+                switchStreamMode(currentMode);
+            }
             playPauseBtn.innerHTML = '<i class="bi bi-pause-fill me-1"></i> Pause Feed';
             playPauseBtn.classList.replace('btn-success', 'btn-purple');
         }

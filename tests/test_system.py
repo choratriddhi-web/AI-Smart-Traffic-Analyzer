@@ -57,12 +57,13 @@ class SmartTrafficSystemTestSuite(unittest.TestCase):
     def test_03_four_cameras_registry(self):
         """Verify all 4 CCTV cameras exist and have video files on disk."""
         cameras = get_all_camera_details()
-        self.assertEqual(len(cameras), 4, "Must contain exactly 4 cameras (CAM-01 to CAM-04)")
+        system_cameras = [c for c in cameras if not c.get('is_custom_upload')]
+        self.assertEqual(len(system_cameras), 4, "Must contain exactly 4 base cameras (CAM-01 to CAM-04)")
 
-        cam_ids = [c["camera_id"] for c in cameras]
+        cam_ids = [c["camera_id"] for c in system_cameras]
         self.assertListEqual(cam_ids, ["CAM-01", "CAM-02", "CAM-03", "CAM-04"])
 
-        for c in cameras:
+        for c in system_cameras:
             self.assertTrue(c["file_exists"], f"Video file for {c['camera_id']} ({c['video_file']}) must exist on disk")
         print("[PASS] Test 3: Four simulated CCTV cameras and video files verified.")
 
