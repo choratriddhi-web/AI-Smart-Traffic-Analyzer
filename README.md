@@ -4,7 +4,7 @@
 **Final-Year BSc IT Project** | **Theme:** Cyber-Purple Smart City Command Center  
 **Backend:** Python 3.11/3.13, Django 6, Django REST Framework, PyMongo  
 **Database:** MongoDB Atlas (with PyMongo & Fail-Safe In-Memory Architecture)  
-**AI / Vision:** Ultralytics YOLOv8n, OpenCV, ByteTrack, Scikit-learn, Q-Learning Reinforcement Learning  
+**AI / Vision:** Ultralytics YOLOv8n, OpenCV, ByteTrack, Scikit-learn 
 **Frontend:** HTML5, CSS3, JavaScript (ES6), Bootstrap 5, Chart.js, Leaflet.js  
 
 ---
