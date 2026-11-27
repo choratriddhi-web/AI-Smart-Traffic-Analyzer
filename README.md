@@ -32,15 +32,12 @@ The entire UI is built with a **Cyber-Purple Smart City Command Center** aesthet
 - **Target Classes:** Cars (ID 2), Motorcycles (ID 3), Buses (ID 5), Trucks (ID 7).
 - **Vehicle Counting:** Virtual bidirectional counting lines with single-count trajectory crossing logic and duplicate suppression by tracking ID.
 - **Density Engine:** Automatic four-tier density classification: **LOW**, **MODERATE**, **HIGH**, **VERY HIGH**.
-- **Signal Recommendation:** Adaptive formula accounting for queued vehicles, active count, saturation density, and cross-street waiting delay.
-- **Reinforcement Learning:** Tabular Q-Learning simulation comparing static fixed-time cycles against adaptive state-action-reward agents (queue and delay reduction).
 - **Traffic Forecasting:** Scikit-learn Linear Regression on timestamped historical records predicting traffic volume at **+5 minutes**, **+15 minutes**, and **+30 minutes**.
 
 ### Frontend & Telemetry
 - **UI Framework:** Bootstrap 5.3 + Custom Cyber-Purple CSS (`static/css/purple_theme.css`).
 - **Telemetry Charts:** Chart.js 4 (Category distribution, camera comparison bar charts, density trend line charts, lane queue horizontal bars).
 - **Geographic Services:** Leaflet.js OpenStreetMap integration with live user GPS geolocation and Haversine distance calculation to verified fuel stations.
-- **Voice Assistant:** Native Web Speech API for real-time speech recognition (STT) and speech synthesis (TTS).
 
 ---
 
@@ -131,8 +128,6 @@ python manage.py runserver 127.0.0.1:8000
 | **Vehicle Detection** | `/detection/` | YOLOv8 model architecture, confidence threshold, ByteTrack tracker status. |
 | **Traffic Density** | `/traffic/density/` | Four-category density breakdown (LOW, MODERATE, HIGH, VERY HIGH) and MongoDB logs. |
 | **Lane Management** | `/traffic/lanes/` | Configure, add, and delete traffic lanes per camera junction. |
-| **Signal Optimization** | `/signals/` | Adaptive green timing recommendations with simulated signal light and countdown. |
-| **Q-Learning RL Sim** | `/signals/q-learning/` | Reinforcement Learning academic comparison (Fixed-Time vs Q-Learning). |
 | **Traffic Prediction** | `/prediction/` | Scikit-learn Linear Regression traffic forecasting (+5m, +15m, +30m). |
 | **Accident Monitoring** | `/incidents/` | Incident demonstration alert inbox, test incident generation, acknowledge & resolve. |
 | **Emergency Vehicles** | `/emergency/` | Emergency vehicle monitoring, honest model disclosure, green wave demonstration. |
@@ -152,8 +147,6 @@ python manage.py runserver 127.0.0.1:8000
 - `GET /api/petrol-pumps/?lat=<lat>&lng=<lng>` — Returns verified fuel stations sorted by driving distance.
 - `GET /cameras/<id>/stream/?mode=yolo` — Multipart Motion JPEG video stream with real-time YOLOv8 detections.
 - `GET /cameras/<id>/api/stats/` — Real-time vehicle counts, line crossings, and density for AJAX polling.
-- `GET /signals/api/recommend/<id>/` — Real-time adaptive green signal duration calculation.
-- `GET /signals/api/q-learning/simulate/` — Runs an on-demand 20-step Q-learning comparison episode.
 - `GET /prediction/api/<id>/` — Returns Linear Regression projection coordinates for charting.
 - `POST /assistant/api/query/` — Natural Language AI Traffic Assistant query resolution.
 
@@ -161,7 +154,6 @@ python manage.py runserver 127.0.0.1:8000
 
 ## 8. Academic & Verification Disclosures
 
-1. **Simulated Signals:** All traffic lights and countdown timers rendered in the application are simulated AI recommendations and are **NOT connected to physical street signals**.
 2. **Emergency Vehicles:** Standard COCO YOLO weights (`yolov8n.pt`) identify cars, motorcycles, buses, and trucks. Emergency responder classifications are clearly indicated as **NOT CONFIGURED** in standard mode, with a dedicated **Academic Demonstration Mode** provided for testing Green Wave preemption.
 3. **Accident Detection:** Video stoppage incidents are generated and acknowledged through the Incident Response workflow for academic evaluation and demonstration.
 4. **Smart SOS:** SOS distress submissions are handled within the smart city demonstration platform and **do not dial actual 112/911 emergency services**.
